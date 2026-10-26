@@ -957,7 +957,7 @@ function fillLayer(L){
   return FillLayer;
 }
 function tileLayer(L, key, dark){ var bm=T.basemap(key, dark), F=fillLayer(L);
-  return L.layerGroup(bm.layers.map(function(u,i){ return new F(u,{maxNativeZoom:bm.max, maxZoom:19, labels:i>0, attribution:i===0?T.ATTR_HTML+' · '+E(bm.attr.replace(/^Powered by Esri · /,'')):''}); })); }
+  return L.layerGroup(bm.layers.map(function(u,i){ return new F(u,{maxNativeZoom:bm.max, maxZoom:19, labels:i>0, updateWhenZooming:false, keepBuffer:4, attribution:i===0?T.ATTR_HTML+' · '+E(bm.attr.replace(/^Powered by Esri · /,'')):''}); })); }
 function boundsOf(L, pts){ pts=(pts||[]).filter(T.okLL); if(!pts.length) return null; var b=L.latLngBounds(pts.map(function(p){ return [p[0],p[1]]; })); return b; }
 
 /* ---------------- the viewer ---------------- */
@@ -1484,6 +1484,12 @@ function styleFor(key, dark){
     sky:{'sky-color':'#0b1730','horizon-color':'#7fb2e6','fog-color':'#9cc3ea','sky-horizon-blend':0.6,'horizon-fog-blend':0.6,'fog-ground-blend':0.9,'atmosphere-blend':['interpolate',['linear'],['zoom'],0,1,5,1,7,0]}};
 }
 var ll=function(p){ return [p[1], p[0]]; };
+function overviewCam(mgl, pts){
+  pts=(pts||[]).filter(T.okLL); if(!pts.length) return {center:[20,20], zoom:1.3};
+  var b=new mgl.LngLatBounds(); T.unwrap(pts.map(function(p){ return [p[0],p[1]]; }).sort(function(a,c){ return a[1]-c[1]; })).forEach(function(p){ b.extend([p[1],p[0]]); });
+  var span=Math.max(b.getEast()-b.getWest(), b.getNorth()-b.getSouth()), c=b.getCenter();
+  return {center:[c.lng, c.lat], zoom:span>60?1.3:Math.max(1.3, Math.min(4, 3.2-Math.log2(span/10||1)))};
+}
 var dn=function(opt, e, i){ return opt.dayNo?opt.dayNo(e):i+1; };
 /* the journey as map layers: legs by transport, every place in its day's colour */
 function addTripLayers(map, opt, entries, legs, big){
@@ -1502,14 +1508,11 @@ function globe(el, opt){
   return loadGlobe().then(function(){ return new Promise(function(res, rej){
     var mgl=G.maplibregl, entries=opt.entries||[], legs=T.tripLegs(entries);
     el.classList.add('tom-globe');
-    var map;
-    try{ map=new mgl.Map({container:el, style:styleFor(opt.basemap, opt.dark), center:[20,20], zoom:1.3, attributionControl:{compact:true}, maxPitch:60, renderWorldCopies:false}); }
+    var map, cam=overviewCam(mgl, T.allPoints(entries));
+    try{ map=new mgl.Map({container:el, style:styleFor(opt.basemap, opt.dark), center:cam.center, zoom:cam.zoom, attributionControl:{compact:true}, maxPitch:60, renderWorldCopies:false}); }
     catch(err){ el.classList.remove('tom-globe'); return rej(new Error('This device cannot show the globe.')); }
     map.addControl(new mgl.NavigationControl({showCompass:false}), opt.navPos||'bottom-left');
-    var markers=[], dayItems=[], spinning=!!opt.spin && !G.TOM_NOSPIN, raf=0, dead=false;
-    function spin(){ if(!spinning||dead) return; var c=map.getCenter(); map.setCenter([c.lng+0.12, c.lat]); raf=requestAnimationFrame(spin); }
-    function stopSpin(){ spinning=false; cancelAnimationFrame(raf); }
-    ['mousedown','touchstart','wheel','dragstart'].forEach(function(ev){ map.on(ev, stopSpin); });
+    var markers=[], dayItems=[], dead=false;
     function mk(html, cls, p, onClick, z){ var d=document.createElement('div'); d.className=cls; d.innerHTML=html; if(onClick){ d.style.cursor='pointer'; d.addEventListener('click', function(e){ e.stopPropagation(); onClick(); }); }
       var m=new mgl.Marker({element:d, anchor:'center'}).setLngLat(ll(p)).addTo(map); if(z) d.style.zIndex=z; return m; }
     function addTrip(){
@@ -1535,13 +1538,13 @@ function globe(el, opt){
       if(!pts.length){ map.easeTo({center:[20,20], zoom:1.3, duration:900}); return; }
       var b=new mgl.LngLatBounds(); T.unwrap(pts.map(function(p){ return [p[0],p[1]]; }).sort(function(a,c){ return a[1]-c[1]; })).forEach(function(p){ b.extend([p[1],p[0]]); });
       var span=Math.max(b.getEast()-b.getWest(), b.getNorth()-b.getSouth());
-      if(wide || span>60){ var c=b.getCenter(); map.easeTo({center:[c.lng, c.lat], zoom:span>60?1.3:Math.max(1.3, 3.2-Math.log2(span/10||1)), duration:1100}); return; }
+      if(wide || span>60){ var oc=overviewCam(mgl, pts); map.easeTo({center:oc.center, zoom:oc.zoom, duration:2400, essential:true}); return; }
       try{ map.fitBounds(b,{padding:pad, maxZoom:pts.length===1?14:16, duration:2600}); }catch(_){ map.easeTo({center:b.getCenter(), zoom:5}); }
     }
     var api={
       map:map,
       focus:function(i, pad){ var e=i!=null&&i>=0?entries[i]:null; showItems(e);
-        if(!e){ fit(T.allPoints(entries), pad, true); return; } stopSpin();
+        if(!e){ fit(T.allPoints(entries), pad, true); return; }
         var pts=T.dayPoints(e); legs.forEach(function(l){ if(l.ei===i) pts.push(l.a); }); fit(pts, pad); },
       overview:function(){ fit(T.allPoints(entries), null, true); },
       setBasemap:function(key, dark){ var bm=T.basemap(key, dark);
@@ -1549,10 +1552,10 @@ function globe(el, opt){
         bm.layers.forEach(function(u,i){ map.addSource('bm'+i,{type:'raster', tiles:[u], tileSize:256, maxzoom:bm.max}); map.addLayer({id:'bm'+i, type:'raster', source:'bm'+i}, map.getLayer('legs-halo')?'legs-halo':undefined); });
         map.setPaintProperty('bg','background-color', bm.bg); },
       resize:function(){ map.resize(); },
-      destroy:function(){ dead=true; stopSpin(); try{ map.remove(); }catch(_){ } el.classList.remove('tom-globe'); el.innerHTML=''; }
+      destroy:function(){ dead=true; try{ map.remove(); }catch(_){ } el.classList.remove('tom-globe'); el.innerHTML=''; }
     };
     map.on('error', function(){});
-    map.on('load', function(){ addTrip(); fit(T.allPoints(entries), null, true); if(spinning) setTimeout(spin, 1300); res(api); });
+    map.on('load', function(){ addTrip(); res(api); });
   }); });
 }
 /* a still picture of the globe for the book page and the PDF */
