@@ -429,6 +429,53 @@ window.TOM_CONFIG = {
 .jv-pce{position:absolute;right:6px;top:6px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;pointer-events:none;}
 .jv-pop .maplibregl-popup-content{max-height:none;}
 
+/* ---- "Our journey" across both pages ---- */
+.jv-sov{position:absolute;inset:0;z-index:4;display:none;}
+.jv-has-spread .jv-sov{display:block;}
+.jv-has-spread .jv-gutter{z-index:5;}
+.jv-sov>.jv-pg{border-radius:.5em;}
+.jv-spread{gap:.8em;}
+.jv-sph{display:flex;align-items:baseline;gap:1em;flex-wrap:wrap;}
+.jv-spd{font-family:var(--ui);font-weight:800;color:var(--muted);font-size:.95em;}
+.jv-spread .jv-tmapw{flex:1;min-height:0;display:flex;}
+.jv-spread .jv-tmap{flex:1;aspect-ratio:auto;height:100%;}
+.jv-spread .jv-stats{grid-template-columns:repeat(8,1fr);}
+.jv-spread .jv-foot{display:grid;grid-template-columns:1fr auto 1fr;}
+.jv-spread .jv-foot span:first-child{text-align:left;} .jv-spread .jv-foot span:last-child{text-align:right;}
+.jv-th-notebook .jv-spread .jv-nbholes{left:calc(50% - .35em);right:auto;}
+.jv-half{padding:0;}
+.jv-halfin{position:absolute;top:0;bottom:0;width:200%;}
+.jv-half-l .jv-halfin{left:0;} .jv-half-r .jv-halfin{left:-100%;}
+.jv-halfin>.jv-pg{border-radius:0!important;box-shadow:none;}
+/* phones: the spread as one wide page */
+.jv-wideview{padding:0;background:transparent!important;box-shadow:none!important;display:flex;flex-direction:column;justify-content:center;}
+.jv-wideview .jv-widein{position:relative;width:100%;height:50%;flex:none;}
+.jv-wideview .jv-widein>.jv-pg{position:absolute;left:0;top:0;right:auto;bottom:auto;width:200%;height:200%;transform:scale(.5);transform-origin:0 0;border-radius:1em;}
+.jv-rot{margin-top:1em;text-align:center;font-family:var(--ui);font-weight:800;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.4);font-size:1.1em;}
+@media (orientation:landscape){ .jv-rot{display:none;} }
+/* page 4: where we went */
+.jv-k-info{gap:.7em;}
+.jv-infoph{position:absolute;right:2.6em;top:2.4em;width:9.5em;z-index:1;}
+.jv-infoph .jv-cvphf{transform:rotate(4deg);aspect-ratio:1;padding:.45em .45em 1.6em;}
+.jv-th-notebook .jv-infoph .jv-cvphf::before{width:3.5em;height:1.1em;margin-left:-1.75em;top:-.55em;}
+.jv-k-info .jv-h{max-width:calc(100% - 10em);}
+.jv-infod{font-family:var(--ui);font-weight:800;color:var(--muted);font-size:.9em;max-width:calc(100% - 10em);}
+.jv-clist2{display:flex;flex-direction:column;gap:.5em;margin-top:2.2em;}
+.jv-crow{display:flex;gap:.7em;align-items:flex-start;background:var(--card);border:1px solid var(--rule);border-radius:.6em;padding:.5em .7em;}
+.jv-cflag{font-size:2em;line-height:1;}
+.jv-crow div{display:flex;flex-direction:column;gap:.1em;min-width:0;font-family:var(--ui);}
+.jv-crow b{font-size:1.05em;color:var(--head);}
+.jv-crow small{color:var(--muted);font-weight:700;font-size:.8em;}
+.jv-crow span{font-size:.82em;line-height:1.35;}
+.jv-dist{display:grid;grid-template-columns:repeat(auto-fill,minmax(7em,1fr));gap:.45em;}
+.jv-dist>div{background:var(--card);border:1px solid var(--rule);border-radius:.6em;padding:.4em .6em;display:grid;grid-template-columns:auto 1fr;gap:0 .4em;align-items:center;font-family:var(--ui);}
+.jv-dist span{font-size:1.4em;grid-row:span 2;}
+.jv-dist b{font-size:.95em;} .jv-dist small{font-size:.72em;color:var(--muted);font-weight:700;}
+.jv-dist .jv-dtot{background:var(--accent);border-color:var(--accent);color:#fff;} .jv-dist .jv-dtot small{color:rgba(255,255,255,.85);}
+.jv-th-night .jv-dist .jv-dtot{color:#1b2333;}
+.jv-infoart{position:absolute;right:1.4em;bottom:2.2em;font-size:5em;opacity:.12;transform:rotate(-12deg);pointer-events:none;}
+.jv-has-spread .jv-gutter{opacity:.35;}
+
 </style>
 <style>
 /* ================= Trip-O-Matic app ================= */
@@ -1162,6 +1209,36 @@ function journalViewer(root, D, opts){
     if(x.t==='video'){ var qu=pdfMode?dayUrl(e):''; return '<figure class="jv-ph jv-phv '+(cls||'')+'"><div class="jv-phf"><img src="'+E(x.poster||'')+'" alt="" data-lb="'+E(e.id)+'" data-m="'+E(m.id)+'"><span class="jv-playb">▶</span>'+(qu?qrImg(qu):'')+'</div>'+((m.cap||qu)?'<figcaption>'+E(m.cap||'')+(qu?(m.cap?' · ':'')+'scan to watch':'')+'</figcaption>':'')+'</figure>'; }
     return '<figure class="jv-ph '+(cls||'')+'"><div class="jv-phf"><img src="'+E(x.src)+'" alt="'+E(m.cap||'')+'" data-lb="'+E(e.id)+'" data-m="'+E(m.id)+'"></div>'+(m.cap?'<figcaption>'+E(m.cap)+'</figcaption>':'')+'</figure>'; }
   function smapHtml(key, cls){ return '<div class="jv-smap '+(cls||'')+'" data-smap="'+key+'">'+(maps[key]?'<img src="'+maps[key]+'" alt="Map">':'<span class="jv-spin">Drawing the map…</span>')+'</div>'; }
+  function statCells(){
+    var cells=[['📅',st.days,st.days===1?'day':'days'],['📍',st.places,st.places===1?'place':'places'],['🌍',st.countries.length,st.countries.length===1?'country':'countries'],
+      ['🧭',T.km(st.km),'km travelled'],['📷',st.photos,st.photos===1?'photo':'photos'],['🎬',st.videos,st.videos===1?'video':'videos'],['🎙️',st.voice,st.voice===1?'voice note':'voice notes'],['✏️',st.words.toLocaleString(),'words written']];
+    return '<div class="jv-stats">'+cells.map(function(c){ return '<div class="jv-stat"><span class="jv-si">'+c[0]+'</span><b>'+c[1]+'</b><span>'+c[2]+'</span></div>'; }).join('')+'</div>';
+  }
+  /* the "Our journey" spread: the big map across both pages, the numbers underneath */
+  function spreadHtml(o){ o=o||{};
+    var key=ovGlobe?'tripg':'trip';
+    return '<div class="jv-pg jv-inner jv-spread jv-k-trip">'+deco()+'<div class="jv-sph"><h2 class="jv-h">Our journey</h2>'+(st.first?'<span class="jv-spd">'+E(dateRange())+'</span>':'')+'</div>'+
+      '<div class="jv-tmapw jv-smapw"'+(o.live?' data-explore="trip"':'')+'>'+smapHtml(key,'jv-tmap')+(o.live?ovBtn():'')+((o.live||o.enlarge)&&!pdfMode?'<button class="jv-exb" title="Open a big map">⤢ Enlarge</button>':'')+'</div>'+
+      statCells()+'<div class="jv-foot"><span class="jv-pno">1</span><span>'+E(title)+'</span><span class="jv-pno">2</span></div></div>';
+  }
+  /* page 4: where we went, when, and how far */
+  function infoHtml(i){
+    var by={}, order=[];
+    entries.forEach(function(e){ (e.stops||[]).forEach(function(s){ if(!s.cc) return; var c=by[s.cc]; if(!c){ c=by[s.cc]={cc:s.cc, name:s.country||s.cc, dates:{}, places:[]}; order.push(s.cc); }
+      if(e.date) c.dates[e.date]=1; if(s.name && c.places.indexOf(s.name)<0) c.places.push(s.name); }); });
+    var rows=order.map(function(cc){ var c=by[cc], ds=Object.keys(c.dates).sort(), a=ds[0], b=ds[ds.length-1];
+      var when=a?(a===b?T.fmtDate(a,{day:'numeric',month:'short'}):T.fmtDate(a,{day:'numeric',month:'short'})+' – '+T.fmtDate(b,{day:'numeric',month:'short'})):'';
+      return '<div class="jv-crow"><span class="jv-cflag">'+T.flag(cc)+'</span><div><b>'+E(c.name)+'</b><small>'+E(when)+(ds.length?' · '+ds.length+' '+(ds.length===1?'day':'days'):'')+'</small>'+
+        (c.places.length?'<span>'+E(c.places.slice(0,6).join(' · '))+(c.places.length>6?' …':'')+'</span>':'')+'</div></div>'; }).join('');
+    var modes=Object.keys(st.byMode).sort(function(a,b){ return st.byMode[b]-st.byMode[a]; });
+    var cid=D.coverId && med(D.coverId) ? D.coverId : null, cimg=cid?(med(cid).t==='video'?med(cid).poster:med(cid).src):'';
+    return '<div class="jv-pg jv-inner jv-k-info">'+deco()+(cimg?'<div class="jv-infoph"><div class="jv-cvphf"><img src="'+E(cimg)+'" alt=""></div></div>':'')+
+      '<h2 class="jv-h">Where we went</h2>'+(st.first?'<div class="jv-infod">📅 '+E(dateRange())+' · '+st.days+' '+(st.days===1?'day':'days')+'</div>':'')+
+      '<div class="jv-clist2">'+(rows||'<p class="jv-par">No places yet.</p>')+'</div>'+
+      (modes.length?'<h3 class="jv-sub">How far we went</h3><div class="jv-dist">'+modes.map(function(k){ return '<div><span>'+T.MODES[k].e+'</span><b>'+T.km(st.byMode[k])+' km</b><small>'+E(T.MODES[k].n)+'</small></div>'; }).join('')+
+        '<div class="jv-dtot"><span>🧭</span><b>'+T.km(st.km)+' km</b><small>altogether</small></div></div>':'')+
+      '<div class="jv-infoart" aria-hidden="true">🧭</div>'+foot(i)+'</div>';
+  }
   function statsHtml(){
     var cells=[['📅',st.days,st.days===1?'day':'days'],['📍',st.places,st.places===1?'place':'places'],['🌍',st.countries.length,st.countries.length===1?'country':'countries'],
       ['🧭',T.km(st.km),'km travelled'],['📷',st.photos,st.photos===1?'photo':'photos'],['🎬',st.videos,st.videos===1?'video':'videos'],['🎙️',st.voice,st.voice===1?'voice note':'voice notes'],['✏️',st.words.toLocaleString(),'words written']];
@@ -1179,11 +1256,11 @@ function journalViewer(root, D, opts){
   function wantMap(key){
     if(maps[key] || mapJobs[key]) return;
     var o={w:540, h:330, dpr:2, dark:dark, basemap:D.basemap};
-    if(key==='tripg'){ mapJobs[key]=T.globeSnapshot({basemap:D.basemap, dark:dark, entries:entries, dayNo:dayNo, w:540, h:360})
+    if(key==='tripg'){ mapJobs[key]=T.globeSnapshot({basemap:D.basemap, dark:dark, entries:entries, dayNo:dayNo, w:1100, h:500})
         .catch(function(){ wantMap('trip'); return mapJobs.trip.then(function(){ return maps.trip; }); })
         .then(function(u){ maps[key]=u||'data:,'; root.querySelectorAll('[data-smap="'+key+'"]').forEach(function(el){ fillPic(el, u, 'Globe'); }); return u; });
       return; }
-    if(key==='trip'){ o.w=540; o.h=360; o.pts=T.allPoints(entries); o.pad=34; o.maxZ=13;
+    if(key==='trip'){ o.w=1100; o.h=500; o.pts=T.allPoints(entries); o.pad=34; o.maxZ=13;
       o.draw=function(ctx,proj){ T.drawLegs(ctx,proj,legs,{wd:3,isz:12});
         entries.forEach(function(e){ (e.stops||[]).forEach(function(s,j){ if(!T.okLL(s.ll)||j===0) return; var p=proj(s.ll); ctx.save(); ctx.beginPath(); ctx.arc(p[0],p[1],4,0,7); ctx.fillStyle=dcol(e); ctx.fill(); ctx.lineWidth=1.5; ctx.strokeStyle='#fff'; ctx.stroke(); ctx.restore(); }); });
         entries.forEach(function(e){ var s=(e.stops||[]).filter(function(x){ return T.okLL(x.ll); })[0]; if(!s) return; var p=proj(s.ll);
@@ -1269,6 +1346,8 @@ function journalViewer(root, D, opts){
       (D.backText?'<p class="jv-bkt">'+E(D.backText)+'</p>':'<p class="jv-bkt">'+st.days+' days · '+st.countries.length+' '+(st.countries.length===1?'country':'countries')+' · '+T.km(st.km)+' km</p>')+
       (flags?'<div class="jv-cvf">'+flags+'</div>':'')+'<div class="jv-brand">Made with Trip-O-Matic</div></div></div>';
     if(k==='blank') return '<div class="jv-pg jv-inner jv-blank">'+deco()+'<div class="jv-blankart">'+(['✈️','🧭','🗺️','🌍','🎒'][i%5])+'</div>'+foot(i)+'</div>';
+    if(k==='tripL'||k==='tripR') return '<div class="jv-pg jv-half jv-half-'+(k==='tripL'?'l':'r')+'"><div class="jv-halfin">'+spreadHtml({})+'</div></div>';
+    if(k==='info') return infoHtml(i);
     if(k==='trip') return '<div class="jv-pg jv-inner jv-k-trip">'+deco()+'<h2 class="jv-h">Our journey</h2><div class="jv-tmapw jv-smapw"'+(pdfMode?'':' data-explore="trip"')+'>'+smapHtml(ovGlobe?'tripg':'trip','jv-tmap')+(pdfMode?'':ovBtn()+'<button class="jv-exb" title="Open a big map">⤢ Enlarge</button>')+'</div>'+statsHtml()+foot(i)+'</div>';
     if(k==='contents') return '<div class="jv-pg jv-inner jv-k-toc">'+deco()+'<h2 class="jv-h">Day by day</h2><div class="jv-toc">'+
       entries.map(function(e){ return '<a class="jv-tocr" data-go="'+E(e.id)+'"><span class="jv-tocd">Day '+dayNo(e)+'</span><span class="jv-toct">'+E(e.title||T.fmtShort(e.date))+' '+(e.stops||[]).map(function(s){ return s.cc?T.flag(s.cc):''; }).filter(function(v,j,a){ return v && a.indexOf(v)===j; }).join('')+'</span><i></i><b>'+(firstPage[e.id]||'')+'</b></a>'; }).join('')+'</div>'+foot(i)+'</div>';
@@ -1305,7 +1384,7 @@ function journalViewer(root, D, opts){
   }
   var bseq=null, firstPage={};
   function buildSeq(){
-    var s=[{k:'cover'}], inner=[{k:'trip'},{k:'contents'}];
+    var s=[{k:'cover'}], inner=[{k:'tripL'},{k:'tripR'},{k:'contents'},{k:'info'}];
     entries.forEach(function(e){
       if(inner.length%2===1) inner.push({k:'blank'});      /* every day opens on a left-hand page */
       var vis=dayVisual(e), blocks=[];
@@ -1335,7 +1414,10 @@ function journalViewer(root, D, opts){
     body.innerHTML='<div class="jv-stage"><div class="jv-book"><div class="jv-side jv-l"></div><div class="jv-side jv-r"></div><div class="jv-gutter"></div></div></div>'+
       '<div class="jv-nav"><button class="jv-prev" aria-label="Previous page">‹</button><span class="jv-pn"></span><button class="jv-next" aria-label="Next page">›</button><button class="jv-tocb" title="Day by day">☰</button></div>';
     var book=body.querySelector('.jv-book'), Ls=body.querySelector('.jv-l'), Rs=body.querySelector('.jv-r'), pn=body.querySelector('.jv-pn');
-    var skip=function(i){ return seq[i] && seq[i].k==='blank'; };
+    var skip=function(i){ return seq[i] && (seq[i].k==='blank' || seq[i].k==='tripR'); };
+    var tocAt=seq.map(function(p){ return p.k; }).indexOf('contents');
+    var ov=doc.createElement('div'); ov.className='jv-sov'; book.appendChild(ov);
+    function setOv(on){ if(ov._on===on) return; ov._on=on; sleep(ov); ov.innerHTML=on?spreadHtml({live:true}):''; book.classList.toggle('jv-has-spread', !!on); if(on){ wire(ov); wake(ov); } }
     function sleep(el){ el.querySelectorAll('.jv-blive').forEach(function(h){ if(h._lv) h._lv.destroy(); }); }
     function wake(el){
       el.querySelectorAll('.jv-smapw[data-explore]').forEach(function(w){ var key=w.getAttribute('data-explore'), box=w.querySelector('.jv-smap'); if(!box || box.querySelector('.jv-blive')) return;
@@ -1345,12 +1427,14 @@ function journalViewer(root, D, opts){
         if(isTrip) lv.overview(null, true, true); else lv.day(entries.indexOf(e), 30, true); });
     }
     killers.push(function(){ sleep(body); });
-    function slot(el, i){ var key=i==null?'none':'p'+i; if(el._k===key) return; el._k=key; sleep(el); el.innerHTML=i==null?'':pageHtml(seq[i], i); el.classList.toggle('jv-none', i==null); wire(el); wireGo(el); if(i!=null) wake(el); }
+    function slot(el, i){ var key=i==null?'none':'p'+i+(single?'s':''); if(el._k===key) return; el._k=key; sleep(el);
+      el.innerHTML=i==null?'':(single && seq[i].k==='tripL')?'<div class="jv-pg jv-wideview"><div class="jv-widein">'+spreadHtml({enlarge:true})+'</div><div class="jv-rot">↻ Turn your phone sideways to see this bigger</div></div>':pageHtml(seq[i], i); el.classList.toggle('jv-none', i==null); wire(el); wireGo(el); if(i!=null) wake(el); }
     function size(){ var stg=body.querySelector('.jv-stage'), w=stg.clientWidth-20, h=stg.clientHeight-16; single=w<720;
       var ph=Math.min(h,(single?w:w/2)*(PH/PW)), pw=ph*PW/PH; book.style.width=(single?pw:pw*2)+'px'; book.style.height=ph+'px'; book.style.fontSize=(ph/60)+'px'; body.classList.toggle('jv-single', single); }
     function paint(){
-      if(single){ slot(Ls,null); slot(Rs,cur); pn.textContent=cur===0?'Cover':cur===seq.length-1?'Back cover':'Page '+cur+' of '+(seq.length-2); book.classList.remove('jv-closed-l','jv-closed-r'); book.classList.add('jv-closed-l'); return; }
+      if(single){ setOv(false); slot(Ls,null); slot(Rs,cur); pn.textContent=cur===0?'Cover':cur===seq.length-1?'Back cover':'Page '+cur+' of '+(seq.length-2); book.classList.remove('jv-closed-l','jv-closed-r'); book.classList.add('jv-closed-l'); return; }
       var s=spreads[si]; slot(Ls,s[0]); slot(Rs,s[1]); book.classList.toggle('jv-closed-l', s[0]==null); book.classList.toggle('jv-closed-r', s[1]==null);
+      setOv(s[0]!=null && seq[s[0]].k==='tripL');
       pn.textContent=si===0?'Cover':si===spreads.length-1?'Back cover':'Pages '+s[0]+'–'+s[1]+' of '+(seq.length-2);
     }
     function clone(i){ var d=doc.createElement('div'); d.innerHTML=pageHtml(seq[i], i); return d.firstChild; }
@@ -1359,7 +1443,7 @@ function journalViewer(root, D, opts){
       if(single){ var nc=target!=null?target:cur+dir; while(nc>0 && nc<seq.length-1 && skip(nc)) nc+=(dir||1);
         if(nc<0||nc>=seq.length||nc===cur) return; var d=nc>cur?1:-1; busy=true; Rs.classList.add(d>0?'jv-out-l':'jv-out-r');
         setTimeout(function(){ cur=nc; Rs.classList.remove('jv-out-l','jv-out-r'); paint(); busy=false; }, 240); return; }
-      var ns=target!=null?target:si+dir; if(ns<0||ns>=spreads.length||ns===si) return; dir=ns>si?1:-1; busy=true;
+      var ns=target!=null?target:si+dir; if(ns<0||ns>=spreads.length||ns===si) return; dir=ns>si?1:-1; busy=true; setOv(false);
       var from=spreads[si], to=spreads[ns];
       var leaf=doc.createElement('div'); leaf.className='jv-leaf '+(dir>0?'jv-leaf-r':'jv-leaf-l');
       var fr=doc.createElement('div'); fr.className='jv-face jv-front'; var bk=doc.createElement('div'); bk.className='jv-face jv-backf';
@@ -1371,11 +1455,11 @@ function journalViewer(root, D, opts){
       win.requestAnimationFrame(function(){ win.requestAnimationFrame(function(){ leaf.classList.add('jv-turn'); }); });
       setTimeout(function(){ si=ns; paint(); leaf.remove(); busy=false; }, 720);
     }
-    function goIdx(j){ if(single){ flip(0,j); return; } for(var q=0;q<spreads.length;q++) if(spreads[q][0]===j||spreads[q][1]===j){ flip(0,q); return; } }
+    function goIdx(j){ if(single){ flip(j>cur?1:-1,j); return; } for(var q=0;q<spreads.length;q++) if(spreads[q][0]===j||spreads[q][1]===j){ flip(0,q); return; } }
     function wireGo(el){ el.querySelectorAll('[data-go]').forEach(function(a){ a.onclick=function(ev){ ev.preventDefault(); var j=firstPage[a.getAttribute('data-go')]; if(j!=null) goIdx(j); }; }); }
     body.querySelector('.jv-prev').onclick=function(){ flip(-1); };
     body.querySelector('.jv-next').onclick=function(){ flip(1); };
-    body.querySelector('.jv-tocb').onclick=function(){ goIdx(2); };
+    body.querySelector('.jv-tocb').onclick=function(){ goIdx(tocAt); };
     var keyh=function(ev){ if(ev.target.closest && ev.target.closest('input,textarea,select,[contenteditable]')) return; if(!root.isConnected||mode!=='book') return;
       if(ev.key==='ArrowRight'||ev.key==='PageDown') flip(1); if(ev.key==='ArrowLeft'||ev.key==='PageUp') flip(-1); };
     doc.addEventListener('keydown', keyh); killers.push(function(){ doc.removeEventListener('keydown', keyh); });
@@ -1723,18 +1807,19 @@ function journalViewer(root, D, opts){
     return Promise.all(need).then(function(){ say('Drawing the maps'); return allMapsReady(); }).then(function(){
       if(D.url && win.qrcode) entries.forEach(function(e){ var u=dayUrl(e); try{ var q=win.qrcode(0,'M'); q.addData(u); q.make(); qrCache[u]=q.createDataURL(4,0); }catch(_){ } });
       pdfMode=true;
-      var list=[]; bseq.forEach(function(p,i){ if(p.k!=='blank') list.push(i); });
+      var list=[]; bseq.forEach(function(p,i){ if(p.k!=='blank' && p.k!=='tripR') list.push(i); });
       host=doc.createElement('div'); host.className='jv jv-th-'+theme+' jv-pdfhost'; host.innerHTML='<div class="jv-book" style="width:'+PW+'px;height:'+PH+'px;font-size:'+(PH/60)+'px"><div class="jv-side"></div></div>'; doc.body.appendChild(host);
       var side=host.querySelector('.jv-side'), pdf=null;
       var step=function(n){
         if(n>=list.length) return Promise.resolve();
         say('Page '+(n+1)+' of '+list.length);
-        side.innerHTML=pageHtml(bseq[list[n]], list[n]);
+        var wide=bseq[list[n]].k==='tripL', bk=host.querySelector('.jv-book'); bk.style.width=(wide?2*PW:PW)+'px';
+        side.innerHTML=wide?spreadHtml({}):pageHtml(bseq[list[n]], list[n]);
         return new Promise(function(r){ setTimeout(r, 40); }).then(function(){
           var imgs=[].slice.call(side.querySelectorAll('img')); return Promise.all(imgs.map(function(im){ return im.complete?0:new Promise(function(r){ im.onload=im.onerror=r; setTimeout(r,8000); }); }));
-        }).then(function(){ return win.html2canvas(side.firstChild,{scale:2.4, useCORS:true, logging:false, backgroundColor:null, width:PW, height:PH, windowWidth:1200}); })
-        .then(function(cv){ var W=432, H=570.24; /* 6 × 7.92 in */
-          if(!pdf) pdf=new win.jspdf.jsPDF({unit:'pt', format:[W,H], orientation:'portrait', compress:true}); else pdf.addPage([W,H],'portrait');
+        }).then(function(){ return win.html2canvas(side.firstChild,{scale:2.4, useCORS:true, logging:false, backgroundColor:null, width:wide?2*PW:PW, height:PH, windowWidth:1400}); })
+        .then(function(cv){ var W=wide?864:432, H=570.24; /* 6 × 7.92 in, or two of them side by side */
+          if(!pdf) pdf=new win.jspdf.jsPDF({unit:'pt', format:[W,H], orientation:wide?'landscape':'portrait', compress:true}); else pdf.addPage([W,H], wide?'landscape':'portrait');
           pdf.addImage(cv.toDataURL('image/jpeg',0.9),'JPEG',0,0,W,H,undefined,'FAST'); return step(n+1); });
       };
       return step(0).then(function(){ pdf.setProperties({title:title, author:D.author||'', creator:'Trip-O-Matic'});
@@ -2295,7 +2380,7 @@ function renderStops(e){
     '<button class="sinfo'+(TOM.hasInfo(s)?' has':'')+'" data-o="'+i+'" title="More about this place">📝'+(n?'<b>'+n+'</b>':'')+'</button><button class="x" data-x="'+i+'" title="Remove">✕</button></div>'+
     (open?'<div class="sbox"><div class="sbl">More about '+esc(s.name||'this place')+' <small>(readers tap '+TOM.stopLabel(dn,i)+' on the map to see it)</small></div>'+
       '<textarea data-n="'+i+'" maxlength="280" rows="2" placeholder="What was here? What did you do?">'+esc(s.note||'')+'</textarea>'+
-      '<div class="sbl">Pick its photos or videos <small>(from today\'s Day photos)</small></div><div class="spick">'+(vis.length?vis.filter(r=>ownerOf[r.id]==null||ownerOf[r.id]===i).map(r=>'<button data-p="'+i+'" data-id="'+r.id+'" class="'+((s.media||[]).includes(r.id)?'on':'')+'" style="background-image:url('+blobUrl(r.id,'t',r.th||r.poster)+')">'+(r.t==='video'?'<em>▶</em>':'')+'</button>').join(''):'')+
+      '<div class="sbl">Pick its photos or videos <small>(from today\'s Unsorted photos)</small></div><div class="spick">'+(vis.length?vis.filter(r=>ownerOf[r.id]==null||ownerOf[r.id]===i).map(r=>'<button data-p="'+i+'" data-id="'+r.id+'" class="'+((s.media||[]).includes(r.id)?'on':'')+'" style="background-image:url('+blobUrl(r.id,'t',r.th||r.poster)+')">'+(r.t==='video'?'<em>▶</em>':'')+'</button>').join(''):'')+
       '<button class="sadd" data-a="'+i+'" title="Add a new photo or video for this place">＋</button></div></div>':'')+'</div>'; }).join(''):'<p class="hint" style="margin:0">No places yet.</p>';
   $$('.stopw',box).forEach((w,i)=>{ dropZone(w, e, i); w.addEventListener('click', ev=>{ if(!PICK || PICK.e!==e) return; ev.preventDefault(); ev.stopPropagation(); assignMedia(e, PICK.mid, i); }, true); });
   $$('.snm',box).forEach(inp=>inp.oninput=()=>{ e.stops[+inp.dataset.i].name=inp.value; touch(e); });
@@ -2411,7 +2496,7 @@ function assignMedia(e, mid, i){
   e.stops.forEach(s=>{ if(s.media){ const k=s.media.indexOf(mid); if(k>=0) s.media.splice(k,1); } });
   if(i!=null && e.stops[i]){ e.stops[i].media=e.stops[i].media||[]; e.stops[i].media.push(mid); }
   touch(e); endPick(); renderStops(e); renderMedia(e); MAPED.refresh(false);
-  toast(i!=null?'📍 Put on '+TOM.stopLabel(dayNumber(e),i)+' '+esc(e.stops[i].name||''):'Back with the day\'s own photos');
+  toast(i!=null?'📍 Added to '+TOM.stopLabel(dayNumber(e),i)+' '+esc(e.stops[i].name||''):'Moved back to Unsorted photos');
 }
 function startPick(e, mid){
   if(PICK && PICK.mid===mid){ endPick(); return; }
@@ -2430,11 +2515,28 @@ window.TOM_MAPDROP=async(mid, ll)=>{ const e=cur(); if(!e||!mid) return; const r
   toast('📍 New place '+TOM.stopLabel(dayNumber(e), e.stops.length-1)+(r&&TOM.okLL(r.ll)?' made where the photo was taken':' made where you dropped it'));
   try{ const g=await GEO.reverse(st.ll); st.name=g.name||'A place'; st.cc=g.cc; st.country=g.country; }catch(_){ st.name='A place'; }
   touch(e); if(cur()===e) renderStops(e); MAPED.refresh(false); };
+window.TOM_MAPFILES=async(files, ll)=>{ const e=cur(); if(!e) return;
+  files=Array.from(files).filter(f=>/^(image|video)\//.test(f.type)||/\.(heic|heif)$/i.test(f.name)); if(!files.length) return;
+  const metas=[]; for(const f of files) metas.push(isImg(f)?await photoMeta(f):{});
+  MAPED.snap(); const work=[], made=[];
+  files.forEach((f,k)=>{ const at=(metas[k]&&TOM.okLL(metas[k].ll))?metas[k].ll:ll;
+    let st=e.stops.find(x=>x.ll && TOM.dist(x.ll, at)<(at===ll?0.05:0.4));
+    if(!st){ st={id:uid(6), name:'', ll:[+at[0].toFixed(5), +at[1].toFixed(5)], cc:'', country:'', mode:'', src:'photo', note:'', media:[]}; e.stops.push(st); made.push(st); }
+    work.push({f, day:e, stop:st}); });
+  touch(e); renderStops(e); MAPED.refresh(false);
+  await addInto(work, e);
+  for(const st of made){ try{ const g=await GEO.reverse(st.ll); st.name=st.name||g.name||'A place'; st.cc=g.cc; st.country=g.country; }catch(_){ st.name=st.name||'A place'; } }
+  touch(e); if(cur()===e){ renderStops(e); renderMedia(e); } MAPED.refresh(false);
+  toast('📍 Added '+files.length+' '+(files.length===1?'photo':'photos')+(made.length?' and '+made.length+' new '+(made.length===1?'place':'places'):'')); };
 window.TOM_DROP=(i, mid)=>{ const e=cur(); if(!e) return; assignMedia(e, mid||(PICK&&PICK.mid), i); };
+let DRAG=null;   /* the id of the journal photo being dragged */
+window.TOM_DRAGGING=()=>DRAG;
+const hasFiles=ev=>!!(ev.dataTransfer && Array.from(ev.dataTransfer.types||[]).includes('Files'));
 function dropZone(el, e, i){
-  el.addEventListener('dragover', ev=>{ if(!ev.dataTransfer.types.includes('text/tom-media')) return; ev.preventDefault(); ev.dataTransfer.dropEffect='move'; el.classList.add('dropon'); });
-  el.addEventListener('dragleave', ()=>el.classList.remove('dropon'));
-  el.addEventListener('drop', ev=>{ const mid=ev.dataTransfer.getData('text/tom-media'); el.classList.remove('dropon'); if(!mid) return; ev.preventDefault(); assignMedia(e, mid, i); });
+  const ok=ev=>{ if(!DRAG) return false; ev.preventDefault(); try{ ev.dataTransfer.dropEffect='move'; }catch(_){ } el.classList.add('dropon'); return true; };
+  el.addEventListener('dragenter', ok); el.addEventListener('dragover', ok);
+  el.addEventListener('dragleave', ev=>{ if(!el.contains(ev.relatedTarget)) el.classList.remove('dropon'); });
+  el.addEventListener('drop', ev=>{ el.classList.remove('dropon'); const mid=DRAG; if(!mid) return; ev.preventDefault(); ev.stopPropagation(); DRAG=null; document.body.classList.remove('dragging'); assignMedia(e, mid, i); });
 }
 function renderMedia(e){
   const box=$('#edMedia'); if(!box) return;
@@ -2447,18 +2549,18 @@ function renderMedia(e){
       '<button class="mstar'+(J.coverId===m.id?' on':'')+'" title="Use as the journal cover">⭐</button><button class="mx" title="Remove">✕</button>'+
       (e.stops.length?'<button class="mpin" title="Put on a place">📍</button>':'')+'<input placeholder="Add a caption…" maxlength="120" value="'+esc(m.cap)+'"></div>'; };
   const loose=vis.filter(m=>owner[m.id]==null);
-  let h='<div class="mtray" data-drop="day"><div class="msub">Day photos'+(loose.length&&e.stops.length?'<span>Drag one onto a place (in the list or on the map), or tap its 📍</span>':'')+'</div>'+
-    '<p class="mwhy">Keep a photo here if it shows the <b>whole day</b>, like a group photo or the view from where you stayed. Photos of one particular place go on that place.</p><div class="mgrid" id="edTray">'+(loose.length?loose.map(tile).join(''):'<p class="hint mempty">'+(vis.length?'All of today\'s photos are on places.':'No photos yet.')+'</p>')+'</div></div>';
+  let h='<div class="mtray" data-drop="day"><div class="msub">Unsorted photos'+(loose.length&&e.stops.length?'<span>Drag one onto a place (in the list or on the map), or tap its 📍</span>':'')+'</div>'+
+    '<p class="mwhy">Keep one or more photos here to showcase the overall day.</p><div class="mgrid" id="edTray">'+(loose.length?loose.map(tile).join(''):'<p class="hint mempty">'+(vis.length?'All of today\'s photos have been added to places.':'No photos yet.')+'</p>')+'</div></div>';
   const placed=e.stops.map((s,j)=>({s, j, ms:vis.filter(m=>owner[m.id]===j)})).filter(x=>x.ms.length);
-  if(placed.length) h+='<div class="monpl"><div class="msub">On places<span>Drag back up to make it a day photo again</span></div>'+placed.map(x=>
+  if(placed.length) h+='<div class="monpl"><div class="msub">Photos added to places<span>Drag one back up to unsort it</span></div>'+placed.map(x=>
     '<div class="mgrp" data-drop="'+x.j+'"><div class="mgh"><b class="sn" style="background:'+col+'">'+TOM.stopLabel(dn,x.j)+'</b> '+esc(x.s.name||'A place')+'</div><div class="mgrid">'+x.ms.map(tile).join('')+'</div></div>').join('')+'</div>';
   box.innerHTML=h;
   busy.forEach(b2=>$('#edTray',box).appendChild(b2));
   dropZone($('.mtray',box), e, null);
   $$('.mgrp',box).forEach(g=>dropZone(g, e, +g.dataset.drop));
   $$('.mitem[data-m]', box).forEach(el=>{ const m=e.media.find(x=>x.id===el.dataset.m);
-    el.addEventListener('dragstart', ev=>{ ev.dataTransfer.setData('text/tom-media', m.id); ev.dataTransfer.effectAllowed='move'; document.body.classList.add('dragging'); });
-    el.addEventListener('dragend', ()=>document.body.classList.remove('dragging'));
+    el.addEventListener('dragstart', ev=>{ DRAG=m.id; try{ ev.dataTransfer.setData('text/plain', 'trip-o-matic:'+m.id); ev.dataTransfer.effectAllowed='move'; }catch(_){ } document.body.classList.add('dragging'); });
+    el.addEventListener('dragend', ()=>{ setTimeout(()=>{ DRAG=null; }, 50); document.body.classList.remove('dragging'); });
     el.querySelector('input').oninput=ev=>{ m.cap=ev.target.value; touch(e); };
     el.querySelector('input').addEventListener('dragstart', ev=>ev.preventDefault());
     el.querySelector('.mstar').onclick=()=>{ J.coverId=m.id; touchMeta(); renderMedia(e); toast('⭐ This is now the cover'); };
@@ -2711,7 +2813,7 @@ function showHelp(){
     '<h4>Days</h4><p>Days are sorted by date, and the day number comes from the date, so a skipped day keeps the real numbering. Delete a day with the 🗑 beside it in the day list (you can undo straight after). <b>🙈 Keep this day private</b> leaves it out of everything shared or downloaded.</p>'+
     '<h4>Places</h4><p>Places are numbered <i>day.place</i> (2.1, 2.2, then 3.1), and each day has its own colour. Choose how you got to each place (walk, train, plane…) so the journey lines and distances are right. <b>📝</b> opens a short note and the place\'s own photos; readers tap the place on any map to see them. Drag a place\'s number on the map to move it.</p>'+
     '<h4>Photos and videos</h4><p>Photos are resized for the journal. Videos keep up to 30 seconds and are made smaller while they play, so keep the page open until the bar finishes. When added photos carry a date and location, Trip-O-Matic asks once whether to sort them: each goes to the day it was taken (making a new day if needed) and to a place within about 400 m, or a new place. Photos without a date stay on the day you are on. <b>Undo</b> appears straight after sorting.</p>'+
-    '<p>A day has <b>Day photos</b> (shown in the day\'s own gallery) and photos <b>On places</b> (shown on the place\'s card and in <i>Places today</i>). Drag a photo between them, onto a place in the list, or onto a numbered place on the map. On a phone, tap <b>📍</b> on the photo, then the place. ⭐ makes a photo the cover.</p>'+
+    '<p>A day has <b>Unsorted photos</b> (keep one or more there to showcase the overall day; they show in the day\'s own gallery) and <b>Photos added to places</b> (shown on the place\'s card and in <i>Places today</i>). Drag a photo between them, onto a place in the list, or onto a numbered place on the map; drop it on an empty spot of the map to make a new place (at the photo\'s own location if it has one). You can also drop photo files from your computer straight onto the map. On a phone, tap <b>📍</b> on the photo, then the place. ⭐ makes a photo the cover.</p>'+
     '<h4>The map</h4><p>Tools: ✋ Look (move the map, drag things, tap a note to change it), 📍 Place, 😀 Sticker, 📌 Note, 🔤 Words, ✏️ Draw, 〰️ Route, 🧽 Erase, ↩️ Undo. The buttons at the bottom right choose <b>Light</b>, <b>Streets</b> or <b>Satellite</b>; readers see the same map. <b>🌍 Globe</b> shows the whole trip on a globe.</p>'+
     '<h4>Reading</h4><p><b>Book</b> turns pages; once a page is open its map can be dragged and zoomed, and <b>⤢ Enlarge</b> opens a big map. <b>Scroll</b> is a story where the map follows along. <b>Map</b> shows the whole trip; tap a day for its page. Trips through more than one country start on a globe (change this in the journal\'s cover settings, by tapping its title). <b>⬇ PDF</b> and <b>⬇ Web page</b> download a copy.</p>'+
     '<h4>Sharing and keeping it safe</h4><p><b>Share online</b> makes a private link (add a passcode if you like) or a public page; press <b>Update</b> after changes. The first time, a device asks for the family sharing code. <b>Cloud backup</b> saves everything to your Google Drive or OneDrive, so you can carry on writing on another device with <b>Open from Google Drive / OneDrive</b> on the start page. A <b>backup file (.trip)</b> holds the whole journal and can be opened on any device.</p>'+
@@ -2764,10 +2866,14 @@ const MAPED_GL=(()=>{
       snap(); e.items.push({t:'doodle', pts, c:color, w:width}); touch(e); drawItems(); };
     cv.addEventListener('pointerup', end, true); cv.addEventListener('pointercancel', end, true);
     /* a photo dropped on an empty spot becomes a new place (drops on a numbered place are handled by the place itself) */
-    el.addEventListener('dragover', ev=>{ if(!ev.dataTransfer.types.includes('text/tom-media')) return; ev.preventDefault(); el.classList.add('mapdrop'); });
+    const isFiles=ev=>!!(ev.dataTransfer && Array.from(ev.dataTransfer.types||[]).includes('Files'));
+    const ok=ev=>{ if(!(window.TOM_DRAGGING()||isFiles(ev))) return; ev.preventDefault(); try{ ev.dataTransfer.dropEffect=isFiles(ev)?'copy':'move'; }catch(_){ } el.classList.add('mapdrop'); };
+    el.addEventListener('dragenter', ok); el.addEventListener('dragover', ok);
     el.addEventListener('dragleave', ev=>{ if(!el.contains(ev.relatedTarget)) el.classList.remove('mapdrop'); });
-    el.addEventListener('drop', ev=>{ el.classList.remove('mapdrop'); if(ev.defaultPrevented) return; const mid=ev.dataTransfer.getData('text/tom-media'); if(!mid) return; ev.preventDefault();
-      const p=at(ev), l=map.unproject(p); window.TOM_MAPDROP(mid, [+l.lat.toFixed(6), +l.lng.toFixed(6)]); });
+    el.addEventListener('drop', ev=>{ el.classList.remove('mapdrop'); if(ev.defaultPrevented) return;
+      const p=at(ev), l=map.unproject(p), ll=[+l.lat.toFixed(6), +((((l.lng+180)%360+360)%360)-180).toFixed(6)];
+      if(isFiles(ev) && ev.dataTransfer.files && ev.dataTransfer.files.length){ ev.preventDefault(); window.TOM_MAPFILES(ev.dataTransfer.files, ll); return; }
+      const mid=window.TOM_DRAGGING(); if(!mid) return; ev.preventDefault(); document.body.classList.remove('dragging'); window.TOM_MAPDROP(mid, ll); });
     return ready;
   }
   function build(){
@@ -2872,9 +2978,10 @@ const MAPED_GL=(()=>{
         drag:tool==='look'?ll=>{ snap(); s.ll=[+ll[0].toFixed(5), +ll[1].toFixed(5)]; touch(e); refresh(false); }:null});
       m._k='stop'; const el=m.getElement(); el.style.zIndex=3;
       /* photos can be dropped straight onto a numbered place on the map */
-      el.addEventListener('dragover', ev=>{ if(!ev.dataTransfer.types.includes('text/tom-media')) return; ev.preventDefault(); el.classList.add('dropon'); });
+      const okp=ev=>{ if(!window.TOM_DRAGGING()) return; ev.preventDefault(); ev.stopPropagation(); el.classList.add('dropon'); };
+      el.addEventListener('dragenter', okp); el.addEventListener('dragover', okp);
       el.addEventListener('dragleave', ()=>el.classList.remove('dropon'));
-      el.addEventListener('drop', ev=>{ const mid=ev.dataTransfer.getData('text/tom-media'); el.classList.remove('dropon'); if(!mid) return; ev.preventDefault(); ev.stopPropagation(); window.TOM_DROP(i, mid); }); });
+      el.addEventListener('drop', ev=>{ const mid=window.TOM_DRAGGING(); el.classList.remove('dropon'); if(!mid) return; ev.preventDefault(); ev.stopPropagation(); document.body.classList.remove('dragging'); window.TOM_DROP(i, mid); }); });
   }
   function drawTrip(){
     if(!src('legs')) return; const s=sorted(), e=cur(), i=s.indexOf(e);
