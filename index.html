@@ -203,7 +203,8 @@ window.TOM_CONFIG = {
 .jv-tocr:hover .jv-toct{color:var(--accent);}
 
 /* ================= SCROLL ================= */
-.jv-scroll{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);font-size:16px;}
+.jv-scroll{display:grid;grid-template-columns:minmax(0,1fr) var(--mapw,47%);font-size:16px;transition:grid-template-columns .45s ease;}
+.jv-scroll.jv-resizing{transition:none;user-select:none;}
 .jv-sstory{grid-column:1;grid-row:1;padding-bottom:30vh;}
 .jv-smapcol{grid-column:2;grid-row:1;position:sticky;top:0;height:var(--jvh,100vh);align-self:start;}
 .jv-smapcol .jv-lmap{position:absolute;inset:0;}
@@ -405,6 +406,28 @@ window.TOM_CONFIG = {
 /* book map buttons sit at the top, clear of the map credits */
 .jv-smapw .jv-exb{bottom:auto;top:.6em;}
 .jv-tmapw .jv-ovt{bottom:auto;top:.6em;}
+
+/* ---- Scroll: the divider, and a bigger map while a place is open ---- */
+.jv-split{position:absolute;left:-7px;top:0;bottom:0;width:14px;z-index:800;cursor:col-resize;touch-action:none;display:flex;align-items:center;justify-content:center;}
+.jv-split i{width:6px;height:56px;border-radius:3px;background:rgba(255,255,255,.95);box-shadow:0 1px 5px rgba(0,0,0,.35);}
+.jv-split:hover i,.jv-resizing .jv-split i{background:var(--accent);}
+@media (max-width:760px){
+  .jv-scroll{transition:none;}
+  .jv-scroll .jv-smapcol{height:calc(var(--jvh,100vh) * var(--mh,0.36))!important;transition:height .45s ease;}
+  .jv-resizing .jv-smapcol{transition:none;}
+  .jv-split{left:0;right:0;top:auto;bottom:-7px;width:auto;height:14px;cursor:row-resize;}
+  .jv-split i{width:56px;height:6px;}
+}
+/* ---- Map view: the day panel steps aside while a place is open ---- */
+.jv-mcard{transition:transform .4s ease, opacity .4s ease;}
+.jv-pfocus .jv-mcard{transform:translateX(calc(100% + 24px));opacity:0;pointer-events:none;}
+.jv-cardback{display:none;position:absolute;right:12px;top:12px;z-index:650;border:0;border-radius:999px;padding:9px 14px;font-family:var(--ui);font-weight:800;font-size:14px;background:var(--paper);color:var(--ink);box-shadow:var(--shadow);cursor:pointer;}
+.jv-pfocus .jv-cardback{display:block;}
+@media (max-width:760px){ .jv-pfocus .jv-mcard{transform:translateY(calc(100% + 80px));} .jv-cardback{top:auto;bottom:62px;right:auto;left:50%;transform:translateX(-50%);} }
+/* ---- the place pop-up ---- */
+.jv-pcm{cursor:zoom-in;}
+.jv-pce{position:absolute;right:6px;top:6px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+.jv-pop .maplibregl-popup-content{max-height:none;}
 
 </style>
 <style>
@@ -768,6 +791,10 @@ body.picking .jv-stp span{box-shadow:0 0 0 4px var(--coral);animation:pickPulse 
 .stopw{border:2px solid transparent;}
 @media (max-width:760px){ .helpb span{display:none;} .helpb{padding:7px 10px;} }
 @media (max-width:1060px){ .dayshead #dTrip .tl{display:none;} }
+.mwhy{margin:-4px 2px 8px;font-size:13px;line-height:1.45;color:var(--muted);background:var(--sun-l);border-radius:10px;padding:7px 10px;}
+.mwhy b{color:var(--ink);}
+#emap.mapdrop{box-shadow:inset 0 0 0 4px var(--teal);}
+body.dragging #emap::after{content:'Drop on a number to add it to that place, or anywhere else to make a new place';position:absolute;left:50%;top:70px;transform:translateX(-50%);z-index:900;background:rgba(36,48,58,.9);color:#fff;font-weight:800;font-size:13px;padding:8px 14px;border-radius:999px;pointer-events:none;white-space:nowrap;}
 
 </style>
 </head>
@@ -1102,7 +1129,7 @@ function journalViewer(root, D, opts){
   function placeCard(e, j){
     var s=(e.stops||[])[j]; if(!s) return ''; var ms=placeMedia(s), ids=ms.join(',');
     var pic=function(id, big){ var x=med(id), src=x.t==='video'?x.poster:(big?x.src:(x.th||x.src));
-      return '<span class="jv-pcm'+(big?' big':'')+'"><img src="'+E(src||'')+'" alt="" data-lb="'+E(e.id)+'" data-m="'+E(id)+'" data-ids="'+E(ids)+'">'+(x.t==='video'?'<span class="jv-playb">▶</span>':'')+'</span>'; };
+      return '<span class="jv-pcm'+(big?' big':'')+'"><img src="'+E(src||'')+'" alt="" data-lb="'+E(e.id)+'" data-m="'+E(id)+'" data-ids="'+E(ids)+'" title="Tap to see it big">'+(x.t==='video'?'<span class="jv-playb">▶</span>':'')+(big?'<span class="jv-pce" aria-hidden="true">⤢</span>':'')+'</span>'; };
     return '<div class="jv-pcard"><div class="jv-pch"><b class="jv-plab" style="background:'+dcol(e)+'">'+T.stopLabel(dayNo(e),j)+'</b><span>'+(s.cc?T.flag(s.cc)+' ':'')+'<strong>'+E(s.name||'A place')+'</strong><small>Day '+dayNo(e)+' · '+E(T.fmtShort(e.date))+'</small></span></div>'+
       (ms.length?pic(ms[0],true)+(ms.length>1?'<div class="jv-pcrow">'+ms.slice(1).map(function(id){ return pic(id,false); }).join('')+'</div>':''):'')+
       (s.note?'<p class="jv-pcn">'+E(s.note)+'</p>':'')+'</div>';
@@ -1191,12 +1218,13 @@ function journalViewer(root, D, opts){
   }
   function wire(el){
     el.querySelectorAll('[data-lb]').forEach(function(im){ im.onclick=function(ev){ ev.stopPropagation(); lightbox(im.getAttribute('data-lb'), im.getAttribute('data-m'), im.getAttribute('data-ids')); }; });
-    el.querySelectorAll('[data-place]').forEach(function(c){ c.onclick=function(ev){ ev.stopPropagation(); var p=c.getAttribute('data-place').split('|'), e=byId(p[0]); if(e) placeModal(e, +p[1]); };
+    el.querySelectorAll('[data-place]').forEach(function(c){ c.onclick=function(ev){ ev.stopPropagation(); var p=c.getAttribute('data-place').split('|'), e=byId(p[0]); if(!e) return;
+        if(placeOnMap && !c.closest('.jv-book,.jv-pmodal') && placeOnMap(entries.indexOf(e), +p[1])) return; placeModal(e, +p[1]); };
       c.onkeydown=function(ev){ if(ev.key==='Enter') c.onclick(ev); }; });
     el.querySelectorAll('[data-explore] .jv-exb').forEach(function(b){ b.onclick=function(ev){ ev.stopPropagation(); explore(b.closest('[data-explore]').getAttribute('data-explore')); }; });
     el.querySelectorAll('[data-ovt]').forEach(function(b){ b.onclick=function(ev){ ev.stopPropagation(); setOverview(!ovGlobe); }; });
   }
-  var ovListeners=[];
+  var ovListeners=[], placeOnMap=null;
   function setOverview(g){ ovGlobe=g; if(g) wantMap('tripg');
     root.querySelectorAll('[data-ovt]').forEach(function(b){ b.textContent=ovGlobe?'🗺️ Flat map':'🌍 Globe'; });
     root.querySelectorAll('.jv-tmapw').forEach(function(w){ var m=w.querySelector('.jv-smap'); if(!m) return; var live=m.querySelector('.jv-blive');
@@ -1401,7 +1429,7 @@ function journalViewer(root, D, opts){
         var b=boundsOf(L,pts); if(!b) return; var opt=pad2(pad); opt.maxZoom=pts.length===1?15:17;
         if(instant) map.fitBounds(b,opt); else { opt.duration=2.8; opt.easeLinearity=0.15; map.flyToBounds(b,opt); } },
       fitDay:function(i, pad){ var e=entries[i], pts=T.dayPoints(e), b=boundsOf(L,pts); if(b){ var opt=pad2(pad); opt.maxZoom=pts.length===1?15:17; map.fitBounds(b,opt); } },
-      resize:function(){ map.invalidateSize(); }, current:function(){ return shown; }, setGlobe:function(){}, intro:function(){}, destroy:function(){ try{ map.remove(); }catch(_){ } }};
+      resize:function(){ map.invalidateSize(); }, current:function(){ return shown; }, setGlobe:function(){}, intro:function(){}, place:null, closePop:function(){}, destroy:function(){ try{ map.remove(); }catch(_){ } }};
     setTimeout(function(){ map.invalidateSize(); }, 60);
     return api;
   }
@@ -1463,11 +1491,23 @@ function journalViewer(root, D, opts){
         });
         map.getSource('items').setData({type:'FeatureCollection', features:lines});
         (e.stops||[]).forEach(function(st,j){ if(!T.okLL(st.ll)) return; var info=T.hasInfo(st);
-          var m=mk('<span style="background:'+dcol(e)+'">'+T.stopLabel(dayNo(e),j)+(info?'<i>ⓘ</i>':'')+'</span>','jv-stp', st.ll, function(){
-            if(popup) popup.remove();
-            popup=new mgl.Popup({className:'jv-pop', maxWidth:'290px', offset:16, focusAfterOpen:false}).setLngLat(ll2(st.ll)).setHTML(placeCard(e,j)).addTo(map);
-            wire(popup.getElement()); });
+          var m=mk('<span style="background:'+dcol(e)+'">'+T.stopLabel(dayNo(e),j)+(info?'<i>ⓘ</i>':'')+'</span>','jv-stp', st.ll, function(){ openPop(e, j); });
           m.getElement().title=st.name||''; pillMk.push(m); });
+      }
+      /* a place's pop-up on its point; once it has drawn, the map shifts if any of it is cut off */
+      function openPop(e, j){
+        var st=e.stops[j]; if(!st||!T.okLL(st.ll)) return;
+        if(popup){ var old=popup; popup=null; old.remove(); }
+        var p=new mgl.Popup({className:'jv-pop', maxWidth:'300px', offset:18, focusAfterOpen:false, anchor:'bottom'}).setLngLat(ll2(st.ll)).setHTML(placeCard(e,j)).addTo(map);
+        popup=p; wire(p.getElement());
+        p.on('close', function(){ if(popup===p) popup=null; if(o.onPop) o.onPop(false); });
+        if(o.onPop) o.onPop(true);
+        var keep=function(){ if(popup!==p) return; var pe=p.getElement(), r=pe.getBoundingClientRect(), c=el.getBoundingClientRect(), m=14, dx=0, dy=0;
+          if(r.top<c.top+m) dy=r.top-c.top-m; if(r.bottom>c.bottom-m) dy=r.bottom-c.bottom+m;
+          if(r.left<c.left+m) dx=r.left-c.left-m; if(r.right>c.right-m) dx=r.right-c.right+m;
+          if(dx||dy) map.panBy([dx,dy],{duration:600}); };
+        p.getElement().querySelectorAll('img').forEach(function(im){ if(!im.complete) im.addEventListener('load', function(){ setTimeout(keep, 30); }, {once:true}); });
+        setTimeout(keep, 60);
       }
       function overviewCam2(pad){ if(isGlobe) return T.overviewCam(mgl, pts, el.clientWidth, el.clientHeight);
         var b=bnds(mgl, pts); if(!b) return {center:[20,20], zoom:1.3}; var c=map.cameraForBounds(b,{padding:pad||50, maxZoom:12}), arr=function(x){ x=mgl.LngLat.convert(x); return [x.lng, x.lat]; }; return c?{center:arr(c.center), zoom:c.zoom}:{center:arr(b.getCenter()), zoom:3}; }
@@ -1492,6 +1532,15 @@ function journalViewer(root, D, opts){
             opt.maxZoom=Math.min(opt.maxZoom, z+0.4);
             if(instant){ opt.duration=0; map.fitBounds(b,opt); } else { opt.duration=5000; opt.curve=1.3; map.fitBounds(b,opt); } }); },
         fitDay:function(i, pad){ var e=entries[i], p=T.dayPoints(e), b=bnds(mgl,p); if(b) map.fitBounds(b,{padding:pad||50, maxZoom:p.length===1?15:17, duration:0}); },
+        /* fly to a place (putting it low in the window so its pop-up fits above) and open the pop-up there */
+        place:function(i, j){ finishIntro(); var e=entries[i], st=e&&e.stops[j]; if(!st||!T.okLL(st.ll)) return;
+          if(shown!==i){ shown=i; clearDay(); showDayMarkers(false); dayStuff(e); if(o.fade) setUpto(i); }
+          if(popup){ var old=popup; popup=null; old.remove(); }
+          var me=++flightNo, h=el.clientHeight;
+          T.detailZoom(D.basemap, dark, st.ll, 16).then(function(z){ if(me!==flightNo||dead) return;
+            map.flyTo({center:ll2(st.ll), zoom:Math.max(Math.min(z+0.4, 16), Math.min(map.getZoom(), 16)), offset:[0, Math.round(h*0.22)], duration:2600, essential:true, curve:1.3});
+            map.once('moveend', function(){ if(me===flightNo && !dead) openPop(e, j); }); }); },
+        closePop:function(){ if(popup){ var p=popup; popup=null; p.remove(); } },
         /* the opening: turn about a quarter of the world, settle on the trip, then the days drop in one by one while the route draws */
         intro:function(){
           if(reduceMotion || shown>=0 || dead) return;
@@ -1521,7 +1570,7 @@ function journalViewer(root, D, opts){
       map.on('error', function(){});
       /* ready once the style is in; tiles keep arriving while the opening plays */
       var fold=function(){ el.querySelectorAll('.maplibregl-ctrl-attrib').forEach(function(a){ a.classList.remove('maplibregl-compact-show'); a.removeAttribute('open'); }); };
-      var started=false, start=function(){ if(started) return; started=true; clearTimeout(to); build(); if(o.quiet) { fold(); setTimeout(fold, 300); } res(api); };
+      var started=false, start=function(){ if(started) return; started=true; clearTimeout(to); build(); fold(); setTimeout(fold, 300); res(api); };
       map.once('style.load', start); map.once('load', start);
       if(map.isStyleLoaded && map.isStyleLoaded()) start();
     });
@@ -1529,7 +1578,7 @@ function journalViewer(root, D, opts){
   /* one handle for either engine: calls made before the map is ready are replayed once it is */
   function makeLive(el, o){
     o=o||{}; var impl=null, queue=[], gone=false, api={current:function(){ return impl?impl.current():-1; }};
-    ['overview','day','fitDay','resize','setGlobe','intro','destroy'].forEach(function(k){ api[k]=function(){ var a=arguments; if(k==='destroy') gone=true; if(impl) return impl[k].apply(null,a); queue.push([k,a]); }; });
+    ['overview','day','fitDay','resize','setGlobe','intro','destroy','place','closePop'].forEach(function(k){ api[k]=function(){ var a=arguments; if(k==='destroy') gone=true; if(impl) return impl[k].apply(null,a); queue.push([k,a]); }; });
     if(o.quiet) el.style.opacity='0'; else el.innerHTML='<div class="gload">🌍 Getting the map ready…</div>';
     var clearLoad=function(){ var q=el.querySelector('.gload'); if(q) q.remove(); };
     var useL=function(){ clearLoad(); canGlobe=false; root.querySelectorAll('[data-ovt]').forEach(function(b){ b.style.display='none'; }); return makeLiveL(el, o); };
@@ -1539,9 +1588,12 @@ function journalViewer(root, D, opts){
         if(gone){ impl.destroy(); return null; }
         if(o.quiet){ var show=function(){ el.style.opacity='1'; }; if(impl.map && impl.map.once){ impl.map.once('idle', show); setTimeout(show, 6000); } else show(); }
         queue.forEach(function(q){ if(impl[q[0]]) impl[q[0]].apply(null,q[1]); }); queue=[]; return impl; });
+    api.canPlace=function(){ return !!(impl && impl.place); };
     if(!o.keep) killers.push(function(){ api.destroy(); });
     return api;
   }
+  /* keep a map's size in step while its box grows or shrinks */
+  function followSize(lv, ms){ var t0=performance.now(); (function f(){ lv.resize(); if(performance.now()-t0<(ms||500)) requestAnimationFrame(f); })(); }
 
   /* ---- Explore: a book map opened full-screen and alive ---- */
   function explore(key){
@@ -1585,16 +1637,33 @@ function journalViewer(root, D, opts){
       '<section class="jv-sec jv-intro" data-i="-1"><div class="jv-card"><h2 class="jv-h">Our journey</h2>'+statsHtml()+'</div></section>'+
       entries.map(function(e,i){ return daySection(e,i); }).join('')+
       '<section class="jv-sec jv-send" data-i="-3"><div class="jv-card"><div class="jv-bkend">The end</div>'+(D.backText?'<p>'+E(D.backText)+'</p>':'')+'<div class="jv-brand">Made with Trip-O-Matic</div></div></section>'+
-      '</div><div class="jv-smapcol"><div class="jv-lmap"></div><div class="jv-mtag"></div><div class="jv-ovbox">'+ovBtn()+'</div></div></div>';
+      '</div><div class="jv-smapcol"><div class="jv-lmap"></div><div class="jv-mtag"></div><div class="jv-ovbox">'+ovBtn()+'</div>'+
+      '<div class="jv-split" role="separator" aria-label="Drag to make the map bigger or smaller" title="Drag to resize the map"><i></i></div></div></div>';
     wire(body);
     var mapEl=body.querySelector('.jv-lmap'), tag=body.querySelector('.jv-mtag'), ovbox=body.querySelector('.jv-ovbox'), sc=body;
     var setH=function(){ body.querySelector('.jv-scroll').style.setProperty('--jvh', body.clientHeight+'px'); };
     setH(); win.addEventListener('resize', setH); killers.push(function(){ win.removeEventListener('resize', setH); });
-    var lv=makeLive(mapEl,{wheel:false, zoomPos:'topleft', fade:true, globe:ovGlobe});
+    var scr=body.querySelector('.jv-scroll'), col=body.querySelector('.jv-smapcol'), narrow=function(){ return body.clientWidth<=760; };
+    var saved=function(k,d){ try{ var v=parseFloat(localStorage.getItem(k)); return isFinite(v)?v:d; }catch(_){ return d; } };
+    var size={w:saved('tom.mapw',47), h:saved('tom.maph',36)}, grown=false;
+    var apply=function(){ var w=grown?Math.max(size.w,66):size.w, h=grown?Math.max(size.h,62):size.h; scr.style.setProperty('--mapw', w+'%'); scr.style.setProperty('--mh', h/100); };
+    apply();
+    var lv=makeLive(mapEl,{wheel:false, zoomPos:'topleft', fade:true, globe:ovGlobe, onPop:function(open){ if(grown===open) return; grown=open; scr.classList.toggle('jv-grown', open); apply(); followSize(lv, 520); }});
+    /* the divider: drag sideways (or up and down on a phone) to resize the map */
+    (function(){ var sp=body.querySelector('.jv-split'), drag=null;
+      sp.addEventListener('pointerdown', function(ev){ ev.preventDefault(); sp.setPointerCapture(ev.pointerId); drag=true; scr.classList.add('jv-resizing'); });
+      sp.addEventListener('pointermove', function(ev){ if(!drag) return; var r=scr.getBoundingClientRect(), b=body.getBoundingClientRect();
+        if(narrow()){ size.h=Math.max(18, Math.min(80, 100*(ev.clientY-b.top)/b.height)); } else { size.w=Math.max(25, Math.min(78, 100*(r.right-ev.clientX)/r.width)); }
+        grown=false; scr.classList.remove('jv-grown'); apply(); lv.resize(); });
+      var end=function(){ if(!drag) return; drag=null; scr.classList.remove('jv-resizing'); try{ localStorage.setItem('tom.mapw', size.w); localStorage.setItem('tom.maph', size.h); }catch(_){ } lv.resize(); };
+      sp.addEventListener('pointerup', end); sp.addEventListener('pointercancel', end);
+      sp.addEventListener('dblclick', function(){ size={w:47,h:36}; apply(); end(); followSize(lv, 400); }); })();
+    placeOnMap=function(i, j){ if(!lv.canPlace()) return false; var sct=body.querySelector('#day-'+CSS.escape(entries[i].id)); active=i; lv.place(i, j); return true; };
     lv.intro();
     var active=null;
     function show(i, force){
       if(i===active && !force) return; var was=active; active=i;
+      if(grown){ lv.closePop(); }
       if(i>=0){ ovbox.hidden=true; var e=entries[i]; lv.day(i);
         tag.innerHTML='<b style="color:'+dcol(e)+'">Day '+dayNo(e)+'</b> '+E(e.title||T.fmtShort(e.date)); tag.style.display='';
       } else { tag.style.display='none'; ovbox.hidden=!canGlobe; if(was!=null && was>=0) lv.overview(); }
@@ -1617,9 +1686,12 @@ function journalViewer(root, D, opts){
     wire(body.querySelector('.jv-mhead'));
     var cur=-1;
     var padFor=function(){ var wide=body.clientWidth>760; return {top:90, left:50, right:wide?440:50, bottom:wide?80:Math.round(body.clientHeight*0.55)}; };
-    var lv=makeLive(mapEl,{onDay:function(k){ select(k); }, globe:ovGlobe});
+    var lv=makeLive(mapEl,{onDay:function(k){ select(k); }, globe:ovGlobe, onPop:function(open){ mv.classList.toggle('jv-pfocus', open && cur>=0); followSize(lv, 450); }});
+    mv.insertAdjacentHTML('beforeend','<button class="jv-cardback" aria-label="Show the day page">📖 Day page</button>');
+    mv.querySelector('.jv-cardback').onclick=function(){ lv.closePop(); };
+    placeOnMap=function(i, j){ if(!lv.canPlace()) return false; if(cur!==i) select(i, true); mv.classList.add('jv-pfocus'); setTimeout(function(){ lv.place(i, j); }, 60); return true; };
     lv.intro();
-    function select(i){
+    function select(i, quiet){
       var was=cur; cur=i; strip.querySelectorAll('.jv-chip').forEach(function(c){ c.classList.toggle('on', +c.getAttribute('data-i')===i); });
       var on=strip.querySelector('.jv-chip.on'); if(on) strip.scrollTo({left:on.offsetLeft-strip.clientWidth/2+on.clientWidth/2, behavior:'smooth'});
       if(i<0){ card.hidden=true; mv.classList.remove('jv-carded'); ovbox.hidden=!canGlobe; if(was>=0) setTimeout(function(){ lv.resize(); lv.overview({top:110,left:60,right:60,bottom:90}); }, 30); return; }
@@ -1629,7 +1701,8 @@ function journalViewer(root, D, opts){
       card.querySelector('.jv-mcx').onclick=function(){ select(-1); };
       card.querySelector('.jv-mcp').onclick=function(){ if(i>0) select(i-1); };
       card.querySelector('.jv-mcn').onclick=function(){ if(i<entries.length-1) select(i+1); };
-      setTimeout(function(){ lv.resize(); lv.day(i, padFor()); }, 30);
+      mv.classList.remove('jv-pfocus');
+      if(!quiet) setTimeout(function(){ lv.resize(); lv.day(i, padFor()); }, 30);
     }
     ovListeners.push(function(){ lv.setGlobe(ovGlobe); });
     strip.querySelectorAll('.jv-chip').forEach(function(c){ c.onclick=function(){ select(+c.getAttribute('data-i')); }; });
@@ -1677,7 +1750,7 @@ function journalViewer(root, D, opts){
     '<div class="jv-dls">'+(dl.pdf!==false?'<button class="jv-dl" data-dl="pdf" title="Download as PDF">⬇ PDF</button>':'')+(dl.html?'<button class="jv-dl" data-dl="html" title="Download as a web page">⬇ Web page</button>':'')+'</div></div><div class="jv-body"></div>';
   var bodyEl=root.querySelector('.jv-body'), api={};
   function render(m){
-    killers.forEach(function(k){ try{ k(); }catch(_){ } }); killers=[]; ovListeners=[];
+    killers.forEach(function(k){ try{ k(); }catch(_){ } }); killers=[]; ovListeners=[]; placeOnMap=null;
     mode=m; root.querySelectorAll('.jv-modes button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-mode')===m); b.setAttribute('aria-selected', b.getAttribute('data-mode')===m); });
     bodyEl.className='jv-body jv-body-'+m; bodyEl.scrollTop=0;
     if(m==='book'){ if(!bseq) bseq=buildSeq(); wantMap(ovGlobe?'tripg':'trip'); entries.forEach(function(e){ wantMap('day-'+e.id); }); api=bookView(bodyEl); }
@@ -2215,13 +2288,14 @@ function renderStops(e){
   const box=$('#edStops'); if(!box) return;
   const dn=dayNumber(e), col=TOM.dayColor(dn);
   const vis=e.media.map(m=>MEDIA[m.id]).filter(r=>r&&(r.t==='photo'||r.t==='video'));
+  const ownerOf={}; e.stops.forEach((s,j)=>(s.media||[]).forEach(id=>{ if(ownerOf[id]==null) ownerOf[id]=j; }));
   box.innerHTML=e.stops.length?e.stops.map((s,i)=>{ const open=openInfo.has(s.id), n=(s.media||[]).filter(id=>MEDIA[id]).length;
     return '<div class="stopw'+(open?' open':'')+'"><div class="stop"><span class="sn" style="background:'+col+'">'+TOM.stopLabel(dn,i)+'</span><span>'+(s.cc?TOM.flag(s.cc):'')+'</span><input class="snm" data-i="'+i+'" value="'+esc(s.name)+'" maxlength="60" aria-label="Place name">'+
     '<select data-m="'+i+'" title="How did you get here?"><option value="">'+(s.mode?'':'✨ ')+'got here by…</option>'+Object.keys(TOM.MODES).map(k=>'<option value="'+k+'"'+(s.mode===k?' selected':'')+'>'+TOM.MODES[k].e+' '+TOM.MODES[k].n+'</option>').join('')+'</select>'+
     '<button class="sinfo'+(TOM.hasInfo(s)?' has':'')+'" data-o="'+i+'" title="More about this place">📝'+(n?'<b>'+n+'</b>':'')+'</button><button class="x" data-x="'+i+'" title="Remove">✕</button></div>'+
     (open?'<div class="sbox"><div class="sbl">More about '+esc(s.name||'this place')+' <small>(readers tap '+TOM.stopLabel(dn,i)+' on the map to see it)</small></div>'+
       '<textarea data-n="'+i+'" maxlength="280" rows="2" placeholder="What was here? What did you do?">'+esc(s.note||'')+'</textarea>'+
-      '<div class="sbl">Pick its photos or videos</div><div class="spick">'+(vis.length?vis.map(r=>'<button data-p="'+i+'" data-id="'+r.id+'" class="'+((s.media||[]).includes(r.id)?'on':'')+'" style="background-image:url('+blobUrl(r.id,'t',r.th||r.poster)+')">'+(r.t==='video'?'<em>▶</em>':'')+'</button>').join(''):'')+
+      '<div class="sbl">Pick its photos or videos <small>(from today\'s Day photos)</small></div><div class="spick">'+(vis.length?vis.filter(r=>ownerOf[r.id]==null||ownerOf[r.id]===i).map(r=>'<button data-p="'+i+'" data-id="'+r.id+'" class="'+((s.media||[]).includes(r.id)?'on':'')+'" style="background-image:url('+blobUrl(r.id,'t',r.th||r.poster)+')">'+(r.t==='video'?'<em>▶</em>':'')+'</button>').join(''):'')+
       '<button class="sadd" data-a="'+i+'" title="Add a new photo or video for this place">＋</button></div></div>':'')+'</div>'; }).join(''):'<p class="hint" style="margin:0">No places yet.</p>';
   $$('.stopw',box).forEach((w,i)=>{ dropZone(w, e, i); w.addEventListener('click', ev=>{ if(!PICK || PICK.e!==e) return; ev.preventDefault(); ev.stopPropagation(); assignMedia(e, PICK.mid, i); }, true); });
   $$('.snm',box).forEach(inp=>inp.oninput=()=>{ e.stops[+inp.dataset.i].name=inp.value; touch(e); });
@@ -2347,6 +2421,15 @@ function startPick(e, mid){
 }
 function endPick(){ PICK=null; document.body.classList.remove('picking'); $$('.mitem.pickme').forEach(x=>x.classList.remove('pickme')); }
 window.TOM_PICK=()=>PICK;
+window.TOM_MAPDROP=async(mid, ll)=>{ const e=cur(); if(!e||!mid) return; const r=MEDIA[mid]; const at=(r&&TOM.okLL(r.ll))?r.ll:ll;
+  e.stops.forEach(s=>{ if(s.media){ const k=s.media.indexOf(mid); if(k>=0) s.media.splice(k,1); } });
+  const near=e.stops.findIndex(x=>x.ll && TOM.dist(x.ll, at)<0.05);
+  if(near>=0){ assignMedia(e, mid, near); return; }
+  MAPED.snap(); const st={id:uid(6), name:'', ll:[+at[0].toFixed(5), +at[1].toFixed(5)], cc:'', country:'', mode:'', src:'photo', note:'', media:[mid]};
+  e.stops.push(st); touch(e); endPick(); renderStops(e); renderMedia(e); MAPED.refresh(false);
+  toast('📍 New place '+TOM.stopLabel(dayNumber(e), e.stops.length-1)+(r&&TOM.okLL(r.ll)?' made where the photo was taken':' made where you dropped it'));
+  try{ const g=await GEO.reverse(st.ll); st.name=g.name||'A place'; st.cc=g.cc; st.country=g.country; }catch(_){ st.name='A place'; }
+  touch(e); if(cur()===e) renderStops(e); MAPED.refresh(false); };
 window.TOM_DROP=(i, mid)=>{ const e=cur(); if(!e) return; assignMedia(e, mid||(PICK&&PICK.mid), i); };
 function dropZone(el, e, i){
   el.addEventListener('dragover', ev=>{ if(!ev.dataTransfer.types.includes('text/tom-media')) return; ev.preventDefault(); ev.dataTransfer.dropEffect='move'; el.classList.add('dropon'); });
@@ -2364,7 +2447,8 @@ function renderMedia(e){
       '<button class="mstar'+(J.coverId===m.id?' on':'')+'" title="Use as the journal cover">⭐</button><button class="mx" title="Remove">✕</button>'+
       (e.stops.length?'<button class="mpin" title="Put on a place">📍</button>':'')+'<input placeholder="Add a caption…" maxlength="120" value="'+esc(m.cap)+'"></div>'; };
   const loose=vis.filter(m=>owner[m.id]==null);
-  let h='<div class="mtray" data-drop="day"><div class="msub">Day photos'+(loose.length&&e.stops.length?'<span>Drag one onto a place, or tap its 📍</span>':'')+'</div><div class="mgrid" id="edTray">'+(loose.length?loose.map(tile).join(''):'<p class="hint mempty">'+(vis.length?'All of today\'s photos are on places.':'No photos yet.')+'</p>')+'</div></div>';
+  let h='<div class="mtray" data-drop="day"><div class="msub">Day photos'+(loose.length&&e.stops.length?'<span>Drag one onto a place (in the list or on the map), or tap its 📍</span>':'')+'</div>'+
+    '<p class="mwhy">Keep a photo here if it shows the <b>whole day</b>, like a group photo or the view from where you stayed. Photos of one particular place go on that place.</p><div class="mgrid" id="edTray">'+(loose.length?loose.map(tile).join(''):'<p class="hint mempty">'+(vis.length?'All of today\'s photos are on places.':'No photos yet.')+'</p>')+'</div></div>';
   const placed=e.stops.map((s,j)=>({s, j, ms:vis.filter(m=>owner[m.id]===j)})).filter(x=>x.ms.length);
   if(placed.length) h+='<div class="monpl"><div class="msub">On places<span>Drag back up to make it a day photo again</span></div>'+placed.map(x=>
     '<div class="mgrp" data-drop="'+x.j+'"><div class="mgh"><b class="sn" style="background:'+col+'">'+TOM.stopLabel(dn,x.j)+'</b> '+esc(x.s.name||'A place')+'</div><div class="mgrid">'+x.ms.map(tile).join('')+'</div></div>').join('')+'</div>';
@@ -2679,6 +2763,11 @@ const MAPED_GL=(()=>{
       const pts=d.px.map(p=>{ const l=map.unproject(p); return [+l.lat.toFixed(6), +l.lng.toFixed(6)]; });
       snap(); e.items.push({t:'doodle', pts, c:color, w:width}); touch(e); drawItems(); };
     cv.addEventListener('pointerup', end, true); cv.addEventListener('pointercancel', end, true);
+    /* a photo dropped on an empty spot becomes a new place (drops on a numbered place are handled by the place itself) */
+    el.addEventListener('dragover', ev=>{ if(!ev.dataTransfer.types.includes('text/tom-media')) return; ev.preventDefault(); el.classList.add('mapdrop'); });
+    el.addEventListener('dragleave', ev=>{ if(!el.contains(ev.relatedTarget)) el.classList.remove('mapdrop'); });
+    el.addEventListener('drop', ev=>{ el.classList.remove('mapdrop'); if(ev.defaultPrevented) return; const mid=ev.dataTransfer.getData('text/tom-media'); if(!mid) return; ev.preventDefault();
+      const p=at(ev), l=map.unproject(p); window.TOM_MAPDROP(mid, [+l.lat.toFixed(6), +l.lng.toFixed(6)]); });
     return ready;
   }
   function build(){
@@ -2785,7 +2874,7 @@ const MAPED_GL=(()=>{
       /* photos can be dropped straight onto a numbered place on the map */
       el.addEventListener('dragover', ev=>{ if(!ev.dataTransfer.types.includes('text/tom-media')) return; ev.preventDefault(); el.classList.add('dropon'); });
       el.addEventListener('dragleave', ()=>el.classList.remove('dropon'));
-      el.addEventListener('drop', ev=>{ const mid=ev.dataTransfer.getData('text/tom-media'); el.classList.remove('dropon'); if(!mid) return; ev.preventDefault(); window.TOM_DROP(i, mid); }); });
+      el.addEventListener('drop', ev=>{ const mid=ev.dataTransfer.getData('text/tom-media'); el.classList.remove('dropon'); if(!mid) return; ev.preventDefault(); ev.stopPropagation(); window.TOM_DROP(i, mid); }); });
   }
   function drawTrip(){
     if(!src('legs')) return; const s=sorted(), e=cur(), i=s.indexOf(e);
