@@ -1,6 +1,4 @@
-[trip-o-matic-README_2026.md](https://github.com/user-attachments/files/33948004/trip-o-matic-README_2026.md)
-# trip-o-matic
-Map forward, user friendly interactive travel journal
+[trip-o-matic-README_2026.md](https://github.com/user-attachments/files/34056520/trip-o-matic-README_2026.md)
 # Trip-O-Matic
 
 **A travel journal for kids that runs in the browser. One page per day: where you went, photos, short videos, voice notes, mood and weather, daily questions and your story, on a map you draw on yourself. It reads as a page-turning book, a scrolling story map or a full map, and it can be shared, downloaded or printed.**
@@ -13,23 +11,23 @@ Trip-O-Matic is one HTML file. Journals are saved in the browser on the device, 
 
 | Tab | What it does |
 |---|---|
-| **✏️ Write** | The day editor. Days run down the left (along the top on a phone), the day's page in the middle, and the map on the right (a 🗺️ Map tab on phones). |
+| **✏️ Make** | The day editor. Days run down the left (along the top on a phone), the day's page in the middle, and the map on the right (a 🗺️ Map tab on phones). |
 | **📖 Read** | The journal as readers will see it, in three views: **Book**, **Scroll** and **Map**. Downloads as a PDF or a web page from here. |
 | **🚀 Share** | Put the journal online, back it up to Google Drive or OneDrive, or download a copy. |
 
-Click the journal's title (✏️) at the top for **Cover & look**: title, subtitle, author, style, cover photo, cover colour, how it opens, the overview map and a last-page message.
+**❓ Instructions** at the top right (on every screen) gives short steps, with a fold-out section of fuller detail for grown-ups. Click the journal's title (✏️) at the top for **Cover & look**: title, subtitle, author, style, cover photo, cover colour, how it opens, the overview map and a last-page message.
 
 ## Quick start
 
 1. Open the tool and press **＋ Start a new journal**. Give the trip a name and the writer's name.
 2. Day 1 opens. Give it a title, then add places, photos, a mood, answers to the questions and the story.
-3. Press **＋ New day** each day. Days sort themselves by date.
+3. Press **＋ New day** each day. Days sort themselves by date. The 🗑 beside a day in the list deletes it (with Undo).
 4. Look at it in **📖 Read**. Change the style in **Cover & look**.
 5. In **🚀 Share**, connect cloud backup and, when ready, put it online.
 
-The journal saves as you type ("Saved ✓" at top right).
+The journal saves as you type ("Saved ✓" at top right). Refreshing the browser returns to the same screen: the start page stays the start page, and an open journal stays open on the same tab.
 
-## Writing a day
+## Making a day
 
 - **Title and date.** The day number (Day 1, Day 2…) comes from the date, so skipped days keep real numbering.
 - **📍 Where did you go?** Add places in the order visited:
@@ -39,7 +37,8 @@ The journal saves as you type ("Saved ✓" at top right).
   - Photos that carry a location add their own place.
 - **How I got here.** Each place has a *got here by…* menu (walk, bike, car, bus, train, boat, plane). Left alone, Trip-O-Matic guesses from the distance. These choices draw the journey lines between places and the distances in the trip stats.
 - **📝 More about this place.** Opens a short note and the place's own photos or videos, picked from the day or added new. Readers tap the place on any map to see them.
-- **Day photos and place photos.** A photo or video that belongs to a place (picked or added in its 📝 panel, or placed there by its own location) shows a 📍 2.1 badge in the photo grid. It appears on that place's card and in the day's *Places today* row, not in the day's own gallery. Unpick it in the 📝 panel to give it back to the day.
+- **Sorting photos by date and place.** When added photos carry the date and location they were taken, Trip-O-Matic asks once: *Sort them for me* puts each on the day it was taken (making new days as needed) and on a place within about 400 m, or a new place; *Keep them all on Day N* leaves them on the current day. Photos without a date stay on the current day. **Undo** appears straight after sorting. **📥 Photos from the trip** (under ＋ New day) takes a big batch at once.
+- **Day photos and place photos.** The Photos card has two parts: **Day photos** (the day's own gallery) and **On places** (grouped by place, shown on each place's card and in the day's *Places today* row). Drag a photo onto a place in *Where did you go?*, onto a group, or onto a numbered place on the map; drag it back up to make it a day photo again. On a phone, tap 📍 on the photo, then tap the place.
 - **📷 Photos & videos.** Photos are resized for the journal. Videos keep up to 30 seconds: a longer video asks which 30 seconds to keep, then shrinks it while it plays (keep the page open until the bar finishes). ⭐ makes a photo the cover.
 - **🙂 How was today?** Mood and weather.
 - **💭 Today's questions.** Three questions each day (🔀 swaps one), with **＋ Another question** and **✏️ My own question**.
@@ -51,7 +50,7 @@ The journal saves as you type ("Saved ✓" at top right).
 
 Places are numbered **day.place**: 1.1 and 1.2 on day 1, then 2.1, 2.2 on day 2. Each day has its own colour on every map, list and page, so places from different days never get mixed up. The numbering is automatic and updates when places are added, removed or reordered by date.
 
-## The map in Write
+## The map in Make
 
 | Tool | Use |
 |---|---|
@@ -67,7 +66,7 @@ Places are numbered **day.place**: 1.1 and 1.2 on day 1, then 2.1, 2.2 on day 2.
 
 **Basemaps.** The buttons at the bottom right choose **🗺️ Light**, **🏙️ Streets** or **🛰️ Satellite** (with place and road labels). The choice is saved with the journal and used in every reader view, the book and the PDF. In the Night sky style, Light becomes a dark grey map.
 
-**🌍 Globe** on the Write map spins the whole trip on a 3D globe while writing. Picking a drawing tool returns to the flat map.
+**🌍 Globe** on the Make map shows the whole trip on a 3D globe while writing, with a photo marker for each day (tap one to write that day). Picking a drawing tool returns to the flat map. The Make map uses the same map engine as Read, so it zooms smoothly without blinking.
 
 ## Reading the journal
 
@@ -75,11 +74,11 @@ Places are numbered **day.place**: 1.1 and 1.2 on day 1, then 2.1, 2.2 on day 2.
 
 A book with turning pages: cover, an **Our journey** page (trip map and stats: days, places, countries, distance by transport, photos, videos, voice notes, words written), a **Day by day** contents page, then each day starting on a left-hand page. Long stories continue onto extra pages, and extra photos get photo pages. Turn pages with the arrows, by swiping, or with the arrow keys. On a phone it shows one page at a time.
 
-Book maps are pictures, so pages turn smoothly and print cleanly. Tap one, or **🔍 Explore**, for a full-screen live map with clickable places; ‹ › flies from day to day.
+Once a page has turned, its map comes alive: drag and zoom it, and tap a numbered place for its card (the trip map on **Our journey** is the globe when the overview is set to globe). Turn pages with the arrows or the page edges while a map is on screen. **⤢ Enlarge** opens a full-screen map, where ‹ › flies from day to day. Pages show a picture of the map while they turn, and the PDF prints the picture.
 
 ### 📜 Scroll
 
-A story map. The journal scrolls on one side while the map follows: the route draws itself day by day, and each new day flies slowly from the last place to the next one, ending close in. On a phone the map sits above the story.
+A story map. The journal scrolls on one side while the map follows: the route draws itself day by day, and each new day flies slowly (about five seconds) from the last place to the next one, ending close in. On a phone the map sits above the story.
 
 ### 🗺️ Map
 
@@ -141,14 +140,14 @@ Step-by-step instructions are in **trip-o-matic_setup-guide_v3_2026.md**. In sho
 
 | File | Purpose |
 |---|---|
-| `trip-o-matic_app_v05_2026.html` | The tool (upload as `index.html`) |
+| `trip-o-matic_app_v07_2026.html` | The tool (upload as `index.html`) |
 | `trip-o-matic_worker_2026.js` | Cloudflare Worker for sharing online |
 | `trip-o-matic_setup-guide_v3_2026.md` | Setup for hosting, sharing and cloud backup |
 | `trip-o-matic-README_2026.md` | This file |
 
 ## Built with
 
-[MapLibre GL JS](https://maplibre.org) (the reading maps and globe), [Leaflet](https://leafletjs.com) (the Write map, and a fallback for devices without graphics support), [Esri](https://www.esri.com) basemaps (Light Gray Canvas, World Street Map, World Imagery and reference layers), [exifr](https://github.com/MikeKovarik/exifr) (photo locations and dates), [OpenStreetMap Nominatim](https://nominatim.org) (place search), [JSZip](https://stuk.github.io/jszip/), [html2canvas](https://html2canvas.hertzen.com) and [jsPDF](https://github.com/parallax/jsPDF) (backups and PDFs), [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator), Google Fonts (Nunito, Caveat, Fraunces), Cloudflare Workers and R2 (sharing).
+[MapLibre GL JS](https://maplibre.org) (every live map and the globe), [Leaflet](https://leafletjs.com) (a fallback for devices without graphics support), [Esri](https://www.esri.com) basemaps (Light Gray Canvas, World Street Map, World Imagery and reference layers), [exifr](https://github.com/MikeKovarik/exifr) (photo locations and dates), [OpenStreetMap Nominatim](https://nominatim.org) (place search), [JSZip](https://stuk.github.io/jszip/), [html2canvas](https://html2canvas.hertzen.com) and [jsPDF](https://github.com/parallax/jsPDF) (backups and PDFs), [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator), Google Fonts (Nunito, Caveat, Fraunces), Cloudflare Workers and R2 (sharing).
 
 ## Notes and limitations
 
@@ -157,7 +156,7 @@ Step-by-step instructions are in **trip-o-matic_setup-guide_v3_2026.md**. In sho
 - Some areas (e.g. South Korea) have no close-up Light or Streets detail from Esri. Maps there stop zooming at the deepest level Esri has, and have few labels; Satellite has full detail.
 - Place search uses OpenStreetMap's volunteer service, limited to one search a second.
 - HEIC photos open in Safari; other browsers need JPEG. Video shrinking uses the browser's own recorder, so results vary by device (MP4 on most, WebM on some).
-- The reading maps and globe need a device with graphics support (WebGL); without it, a simpler flat map is shown and the globe switch is hidden.
+- The live maps and globe need a device with graphics support (WebGL). Without it, a simpler flat map is used everywhere, the globe switch is hidden, and book maps stay as pictures with Enlarge.
 - Sharing links are unguessable but not secret. Use a passcode for anything beyond close family, since journals include the places visited.
 
 ## Credit
