@@ -21,8 +21,6 @@ window.TOM_CONFIG = {
   appUrl: 'https://www.jonathancinnamon.com/trip-o-matic/'  // optional: the address of this page, e.g. 'https://www.jonathancinnamon.com/trip-o-matic/'
 };
 </script>
- <script data-goatcounter="https://jcinnamon.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
 <style id="tom-vcss">
 /* ================= Trip-O-Matic viewer styles (copied into exports) ================= */
 .jv{--paper:#fffaf0;--ink:#2d2a26;--head:#2d2a26;--accent:#e0684b;--accent2:#2f7d78;--muted:#8c8377;--rule:#e6dccb;--card:#ffffff;
@@ -722,6 +720,55 @@ main{flex:1;min-height:0;position:relative;}
 .mitem.placed .mth{position:relative;}
 .mitem .mth .vb{left:auto;right:6px;top:auto;bottom:6px;}
 
+/* ---- instructions ---- */
+.helpb{flex:none;margin-left:auto;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font-weight:800;font-size:14px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.helpb:hover{background:var(--bg);}
+#tbJ:not([hidden])~.helpb{margin-left:8px;}
+.hsteps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
+.hsteps li{display:flex;gap:12px;align-items:flex-start;background:var(--bg);border-radius:12px;padding:9px 12px;}
+.hle{font-size:26px;line-height:1;flex:none;width:32px;text-align:center;}
+.hsteps b{display:block;font-size:16px;}
+.hsteps li span:not(.hle){font-size:14px;color:#3d4852;line-height:1.45;}
+.hsteps li div b{display:block;} .hsteps li div span b{display:inline;}
+.hnote{margin:4px 0 0;font-weight:800;color:var(--teal-d);}
+.hmore{border:1px solid var(--line);border-radius:12px;padding:0 14px;}
+.hmore summary{cursor:pointer;font-weight:900;padding:12px 0;font-size:15px;}
+.hdet{padding-bottom:12px;font-size:14px;line-height:1.55;color:#3d4852;}
+.hdet h4{margin:12px 0 2px;font-size:15px;color:var(--ink);}
+.hdet p{margin:0 0 6px;}
+/* ---- day list: delete and the whole-trip photo button ---- */
+.dayitem{position:relative;}
+.ddel{position:absolute;right:6px;top:6px;width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;background:rgba(255,255,255,.85);opacity:0;transition:opacity .15s;cursor:pointer;}
+.dayitem:hover .ddel,.dayitem.on .ddel,.ddel:focus{opacity:1;}
+.ddel:hover{background:#fdebe5;}
+@media (hover:none){ .ddel{opacity:.85;} }
+/* ---- sorting summary ---- */
+.sortlist{display:flex;flex-direction:column;gap:6px;}
+.sortrow{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;background:var(--bg);border-radius:10px;padding:8px 12px;}
+.sortrow b{font-weight:900;} .sortrow span{color:var(--muted);font-weight:700;font-size:14px;}
+.sortrow small{grid-column:1/-1;font-size:14px;line-height:1.4;}
+/* ---- photos: the day's own, and the ones on places ---- */
+.mtray,.mgrp{border:2px dashed transparent;border-radius:14px;padding:6px;transition:background .15s,border-color .15s;}
+.msub{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-weight:900;font-size:14px;margin:2px 2px 8px;}
+.msub span{font-weight:700;font-size:12px;color:var(--muted);}
+.mempty{margin:0 0 4px 2px;}
+.monpl{margin-top:8px;display:flex;flex-direction:column;gap:6px;}
+.mgh{display:flex;align-items:center;gap:6px;font-weight:800;font-size:14px;margin:0 2px 6px;}
+.mgh .sn{color:#fff;border-radius:12px;padding:1px 7px;font-size:12px;font-weight:900;}
+.mitem[draggable=true]{cursor:grab;}
+.mitem .mpin{position:absolute;top:5px;left:38px;width:28px;height:28px;border-radius:50%;border:0;background:rgba(255,255,255,.9);font-size:14px;}
+.mitem.pickme{box-shadow:0 0 0 3px var(--coral);}
+body.dragging .mtray,body.dragging .mgrp,body.dragging .stopw{border-color:var(--teal);}
+body.dragging .stopw{border:2px dashed var(--teal);}
+.dropon,body.dragging .dropon{background:var(--teal-l)!important;border-color:var(--teal)!important;border-style:solid!important;}
+body.picking .stopw{box-shadow:0 0 0 3px var(--coral);cursor:pointer;animation:pickPulse 1.2s ease-in-out infinite;}
+body.picking .jv-stp span{box-shadow:0 0 0 4px var(--coral);animation:pickPulse 1.2s ease-in-out infinite;}
+@keyframes pickPulse{50%{box-shadow:0 0 0 6px rgba(232,104,74,.35);}}
+.jv-stp.dropon span{transform:scale(1.25);box-shadow:0 0 0 4px var(--teal);}
+.stopw{border:2px solid transparent;}
+@media (max-width:760px){ .helpb span{display:none;} .helpb{padding:7px 10px;} }
+@media (max-width:1060px){ .dayshead #dTrip .tl{display:none;} }
+
 </style>
 </head>
 <body>
@@ -730,9 +777,10 @@ main{flex:1;min-height:0;position:relative;}
     <button class="brand" id="brand" title="All journals"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#2f7d78"/><path d="M6.5 25.5c4-0.5 4.5-6 9-7s6.5 1 8.5-4.5" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-dasharray="0.1 3.8"/><circle cx="6.5" cy="25.5" r="2.2" fill="#f6c34a"/><path d="M24 3.6a4.7 4.7 0 0 0-4.7 4.7c0 3.5 4.7 7.9 4.7 7.9s4.7-4.4 4.7-7.9A4.7 4.7 0 0 0 24 3.6z" fill="#e8684a"/><circle cx="24" cy="8.3" r="1.8" fill="#fff"/></svg><b>Trip-O-Matic</b></button>
     <div id="tbJ" hidden style="display:contents">
       <button class="jtitle" id="jtitle" title="Cover &amp; look"><span id="jtT"></span> ✏️</button>
-      <nav class="tabs" id="tabs"><button data-v="write">✏️ <span class="tl">Write</span></button><button data-v="read">📖 <span class="tl">Read</span></button><button data-v="share">🚀 <span class="tl">Share</span></button></nav>
+      <nav class="tabs" id="tabs"><button data-v="write">✏️ <span class="tl">Make</span></button><button data-v="read">📖 <span class="tl">Read</span></button><button data-v="share">🚀 <span class="tl">Share</span></button></nav>
       <span class="savest" id="cloudSt" hidden></span><span class="savest" id="savest"></span>
     </div>
+    <button class="helpb" id="helpBtn" title="How to use Trip-O-Matic">❓ <span>Instructions</span></button>
   </header>
   <main>
     <section class="view" id="home">
@@ -742,7 +790,7 @@ main{flex:1;min-height:0;position:relative;}
       <div class="homefoot">Journals are saved in this browser on this device. Use Share → Backup or cloud sync to keep a safe copy. · Trip-O-Matic by Jonathan Cinnamon</div>
     </section>
     <section class="view" id="write" hidden>
-      <aside id="days"><div class="dayshead"><button class="btn coral" id="dNew">＋ <span class="tl">New day</span></button><span class="hint">Days are sorted by date.</span></div><div class="daylist" id="daylist"></div></aside>
+      <aside id="days"><div class="dayshead"><button class="btn coral" id="dNew">＋ <span class="tl">New day</span></button><button class="btn small alt" id="dTrip" title="Add lots of photos at once; they sort themselves into days and places">📥 <span class="tl">Photos from the trip</span></button><input type="file" id="dTripFile" accept="image/*,video/*" multiple hidden><span class="hint">Days are sorted by date.</span></div><div class="daylist" id="daylist"></div></aside>
       <div class="phonetabs" id="phTabs"><button data-t="story" class="on">✏️ My day</button><button data-t="map">🗺️ Map</button></div>
       <section id="editor"></section>
       <section id="mapPane"><div id="emap"></div><div class="mtools" id="mtools"></div><div class="mopts" id="mopts"></div><div class="mhint" id="mhint"></div></section>
@@ -1898,7 +1946,9 @@ function scaleTo(img, max){ const w=img.width||img.naturalWidth, h=img.height||i
 async function photoMeta(file){
   const out={};
   try{ if(window.exifr){ const g=await exifr.gps(file).catch(()=>null); if(g && isFinite(g.latitude) && isFinite(g.longitude) && (g.latitude||g.longitude)) out.ll=[+g.latitude.toFixed(5), +g.longitude.toFixed(5)];
-      const t=await exifr.parse(file,['DateTimeOriginal','CreateDate']).catch(()=>null); const d=t&&(t.DateTimeOriginal||t.CreateDate); if(d instanceof Date && !isNaN(d)) out.time=d.getTime(); } }catch(_){ }
+      const t=await exifr.parse(file).catch(()=>null); let d=t&&(t.DateTimeOriginal||t.CreateDate||t.DateTime);
+      if(typeof d==='string'){ const m=/^(\d{4})[:-](\d\d)[:-](\d\d)[ T](\d\d):(\d\d)/.exec(d); d=m?new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5]):null; }
+      if(d instanceof Date && !isNaN(d)) out.time=d.getTime(); } }catch(_){ }
   return out;
 }
 async function processPhoto(file){
@@ -2027,7 +2077,7 @@ document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState=
 
 /* ================= HOME ================= */
 async function showHome(){
-  view='home'; J=null; curId=null; if(viewer){ viewer.destroy(); viewer=null; }
+  view='home'; J=null; curId=null; setHash(); endPick(); if(viewer){ viewer.destroy(); viewer=null; }
   $('#tbJ').hidden=true; $('#home').hidden=false; ['write','read','share'].forEach(v=>$('#'+v).hidden=true);
   const all=(await DB.all('journals')).sort((a,b)=>b.updated-a.updated);
   const covers={};
@@ -2050,25 +2100,26 @@ async function openJournal(id, v){
   J=await DB.get('journals', id); if(!J){ toast('That journal could not be found.'); return showHome(); }
   J.tombs=J.tombs||{}; J.mediaMeta=J.mediaMeta||{};
   await loadMedia(J.id);
-  try{ localStorage.setItem('tom.last', J.id); }catch(_){ }
   const s=sorted(); curId=(s.find(e=>e.date===today())||s[s.length-1]||{}).id||null;
   $('#home').hidden=true; $('#tbJ').hidden=false; $('#jtT').textContent=J.title; setSave('Saved ✓');
   go(v||(J.entries.length?'write':'write'));
 }
+function setHash(){ try{ history.replaceState(null,'', location.pathname+location.search+(J?'#j='+J.id+'/'+(view==='write'?'make':view):'')); }catch(_){ } }
 function go(v){
-  view=v; ['write','read','share'].forEach(x=>{ $('#'+x).hidden=x!==v; }); $$('#tabs button').forEach(b=>b.classList.toggle('on', b.dataset.v===v));
+  view=v; setHash(); ['write','read','share'].forEach(x=>{ $('#'+x).hidden=x!==v; }); $$('#tabs button').forEach(b=>b.classList.toggle('on', b.dataset.v===v));
   if(viewer && v!=='read'){ viewer.destroy(); viewer=null; }
   if(v==='write') renderWrite(); else if(v==='read') renderRead(); else if(v==='share') renderShare();
 }
 
-/* ================= WRITE ================= */
+/* ================= MAKE (the day editor; its view is still called 'write' inside) ================= */
 function renderDays(){
   const s=sorted();
   $('#daylist').innerHTML=s.map(e=>{ const ph=e.media.map(m=>MEDIA[m.id]).find(r=>r&&(r.t==='photo'||r.t==='video'));
     const th=ph?blobUrl(ph.id,'t',ph.th||ph.poster):'';
-    return '<button class="dayitem'+(e.id===curId?' on':'')+'" data-e="'+esc(e.id)+'"><div class="dth" style="'+(th?'background-image:url('+th+')':'')+'">'+(th?'':(e.mood&&TOM.MOODS[e.mood]?TOM.MOODS[e.mood][0]:'📓'))+'</div>'+
+    return '<button class="dayitem'+(e.id===curId?' on':'')+'" data-e="'+esc(e.id)+'"><span class="ddel" data-del="'+esc(e.id)+'" role="button" tabindex="0" title="Delete this day" aria-label="Delete this day">🗑</span><div class="dth" style="'+(th?'background-image:url('+th+')':'')+'">'+(th?'':(e.mood&&TOM.MOODS[e.mood]?TOM.MOODS[e.mood][0]:'📓'))+'</div>'+
       '<div class="dti"><b>Day '+dayNumber(e)+(e.hidden?' <span class="hid" title="Private day">🙈</span>':'')+'</b><span>'+esc(e.title||TOM.fmtShort(e.date))+'</span><small>'+esc(TOM.fmtShort(e.date))+'</small></div></button>'; }).join('');
-  $$('#daylist .dayitem').forEach(b=>b.onclick=()=>{ if(b.dataset.e===curId) return; curId=b.dataset.e; renderWrite('fly'); });
+  $$('#daylist .dayitem').forEach(b=>b.onclick=ev=>{ const del=ev.target.closest('[data-del]'); if(del){ ev.stopPropagation(); const d=J.entries.find(x=>x.id===del.dataset.del); if(d) deleteDay(d); return; }
+    if(b.dataset.e===curId) return; curId=b.dataset.e; renderWrite('fly'); });
   const on=$('#daylist .dayitem.on'); if(on && on.scrollIntoView) on.scrollIntoView({block:'nearest', inline:'nearest'});
 }
 function nextDate(){ const s=sorted(); if(!s.length) return today(); const t=today(); if(!s.some(e=>e.date===t) && t>s[s.length-1].date) return t;
@@ -2076,6 +2127,7 @@ function nextDate(){ const s=sorted(); if(!s.length) return today(); const t=tod
 function addDay(){ const e=newEntry(nextDate()); J.entries.push(e); curId=e.id; touch(e); renderWrite(true); setTimeout(()=>{ const t=$('#edTitle'); if(t) t.focus(); }, 60); }
 
 function renderWrite(fit){
+  endPick();
   renderDays();
   const e=cur(), ed=$('#editor');
   if(!e){ ed.innerHTML='<div class="blankslate"><div class="big">🎒</div><h2>Ready for day one?</h2><p>Each day of the trip gets its own page: where you went, photos and videos, a voice note and your story.</p><button class="btn big coral" id="bsNew">＋ Start a new day</button></div>';
@@ -2088,7 +2140,7 @@ function renderWrite(fit){
       '<div class="btnrow"><button class="btn small" id="stHere">📍 I\'m here</button><button class="btn small alt" id="stFind">🔎 Find a place</button><button class="btn small alt" id="stTap">👆 Tap the map</button></div>'+
       '<div class="searchbox" id="stSearch" hidden><input type="text" id="stQ" placeholder="Type a place, like Kyoto Station or Eiffel Tower" autocomplete="off"><div class="sresults" id="stRes" hidden></div></div>'+
       '<p class="hint" style="margin:8px 0 0">Photos that know where they were taken add their place by themselves.</p></div>'+
-    '<div class="card" id="edMediaCard"><h3><span class="em">📷</span> Photos &amp; videos<small>videos keep up to 30 seconds</small></h3><div class="mgrid" id="edMedia"></div>'+
+    '<div class="card" id="edMediaCard"><h3><span class="em">📷</span> Photos &amp; videos<small>videos keep up to 30 seconds</small></h3><div id="edMedia"></div>'+
       '<div class="drop" id="edDrop"><button class="btn" id="mAdd">＋ Add photos or videos</button><div style="margin-top:6px">or drop them here</div></div><input type="file" id="mFile" accept="image/*,video/*" multiple hidden></div>'+
     '<div class="card"><h3><span class="em">🙂</span> How was today?</h3><div class="emolab">I felt…</div><div class="emorow" id="edMood">'+
       Object.keys(TOM.MOODS).map(k=>'<button data-k="'+k+'" class="'+(e.mood===k?'on':'')+'"><b>'+TOM.MOODS[k][0]+'</b><span>'+TOM.MOODS[k][1]+'</span></button>').join('')+'</div>'+
@@ -2171,6 +2223,7 @@ function renderStops(e){
       '<textarea data-n="'+i+'" maxlength="280" rows="2" placeholder="What was here? What did you do?">'+esc(s.note||'')+'</textarea>'+
       '<div class="sbl">Pick its photos or videos</div><div class="spick">'+(vis.length?vis.map(r=>'<button data-p="'+i+'" data-id="'+r.id+'" class="'+((s.media||[]).includes(r.id)?'on':'')+'" style="background-image:url('+blobUrl(r.id,'t',r.th||r.poster)+')">'+(r.t==='video'?'<em>▶</em>':'')+'</button>').join(''):'')+
       '<button class="sadd" data-a="'+i+'" title="Add a new photo or video for this place">＋</button></div></div>':'')+'</div>'; }).join(''):'<p class="hint" style="margin:0">No places yet.</p>';
+  $$('.stopw',box).forEach((w,i)=>{ dropZone(w, e, i); w.addEventListener('click', ev=>{ if(!PICK || PICK.e!==e) return; ev.preventDefault(); ev.stopPropagation(); assignMedia(e, PICK.mid, i); }, true); });
   $$('.snm',box).forEach(inp=>inp.oninput=()=>{ e.stops[+inp.dataset.i].name=inp.value; touch(e); });
   $$('select',box).forEach(sel=>sel.onchange=()=>{ e.stops[+sel.dataset.m].mode=sel.value; touch(e); MAPED.refresh(false); });
   $$('[data-x]',box).forEach(b=>b.onclick=()=>{ MAPED.snap(); e.stops.splice(+b.dataset.x,1); touch(e); renderStops(e); MAPED.refresh(false); });
@@ -2182,43 +2235,158 @@ function renderStops(e){
 }
 
 /* ---- photos and videos ---- */
-async function addFiles(e, files, toStop){
-  for(const f of files){
-    const isVid=/^video\//.test(f.type), tile=document.createElement('div'); tile.className='mitem busy';
-    tile.innerHTML='<div class="mth">'+(isVid?'🎬 Getting the video ready…':'📷 Adding…')+'</div><div class="prog"><i></i></div>'; $('#edMedia') && $('#edMedia').appendChild(tile);
+/* ---- photos and videos: read where and when they were taken, then (if it helps) offer to sort them ---- */
+const ymd=t=>{ const d=new Date(t); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const isImg=f=>/^image\//.test(f.type)||/\.(heic|heif|jpe?g|png|webp)$/i.test(f.name);
+function planSort(base, files, metas){
+  const s=sorted(), groups={}, order=[], items=[];
+  files.forEach((f,i)=>{ const m=metas[i]||{};
+    let date=m.time?ymd(m.time):null, tgt=null;
+    if(date) tgt=s.find(x=>x.date===date)||null; else { tgt=base; date=base?base.date:null; }
+    const key=date||'none';
+    let g=groups[key]; if(!g){ g=groups[key]={date, e:tgt, newPlaces:[], atStop:{}, loose:0, n:0}; order.push(key); }
+    g.n++;
+    const it={f, m, key, stop:null, np:null};
+    if(m.ll){
+      const ex=tgt?tgt.stops.find(x=>x.ll&&TOM.dist(x.ll,m.ll)<0.4):null;
+      if(ex){ it.stop=ex; g.atStop[ex.id]=(g.atStop[ex.id]||0)+1; }
+      else { let np=g.newPlaces.find(p=>TOM.dist(p.ll,m.ll)<0.4); if(!np){ np={ll:m.ll, n:0, t:m.time||0}; g.newPlaces.push(np); } np.n++; it.np=np; }
+    } else g.loose++;
+    items.push(it);
+  });
+  order.sort((x,y)=>String(x).localeCompare(String(y)));
+  const interesting=order.some(k=>{ const g=groups[k]; return g.newPlaces.length || !g.e || (base && g.date!==base.date); });
+  return {groups, order, items, interesting};
+}
+function planText(plan, base){
+  const nDays=plan.order.length, nPlaces=plan.order.reduce((a,k)=>a+plan.groups[k].newPlaces.length+Object.keys(plan.groups[k].atStop).length,0);
+  const total=plan.items.length;
+  let h='<p style="margin:0 0 10px;line-height:1.5">'+(total===1?'This photo was':'These '+total+' photos and videos were')+' taken on <b>'+nDays+' '+(nDays===1?'day':'different days')+'</b>'+(nPlaces?' in <b>'+nPlaces+' '+(nPlaces===1?'place':'places')+'</b>':'')+'. Trip-O-Matic can put each one on the right day and place.</p><div class="sortlist">';
+  plan.order.forEach(k=>{ const g=plan.groups[k], e=g.e, bits=[];
+    Object.keys(g.atStop).forEach(id=>{ const j=e.stops.findIndex(x=>x.id===id); bits.push(g.atStop[id]+' at <b>'+TOM.stopLabel(dayNumber(e),j)+' '+esc(e.stops[j].name||'')+'</b>'); });
+    if(g.newPlaces.length) bits.push(g.newPlaces.reduce((a,p)=>a+p.n,0)+' at '+g.newPlaces.length+' new '+(g.newPlaces.length===1?'place':'places'));
+    if(g.loose) bits.push(g.loose+' on the day itself');
+    bits.length=bits.length||0;
+    h+='<div class="sortrow"><b>'+(e?'Day '+dayNumber(e):'📅 New day')+'</b><span>'+(g.date?esc(TOM.fmtDate(g.date)):'')+'</span><small>'+bits.join(' · ')+'</small></div>'; });
+  return h+'</div>';
+}
+async function addFiles(e, files, toStop, whole){
+  if(!files.length) return;
+  if(toStop) return addInto(files.map(f=>({f, day:e, stop:toStop})), e);
+  const t0=toast('📷 Looking at your photos…', 20000);
+  const metas=[]; for(const f of files) metas.push(isImg(f)?await photoMeta(f):{});
+  t0.classList.remove('show');
+  const plan=planSort(e, files, metas);
+  let sortIt=true;
+  if(plan.interesting){
+    const keepLabel=e?'Keep them all on Day '+dayNumber(e):null;
+    const r=await dialog({title:'📷 Sort your photos?', body:planText(plan, e),
+      buttons:(keepLabel?[{label:keepLabel, cls:'alt', value:'keep'}]:[]).concat([{label:'✨ Sort them for me', value:'sort'}])});
+    if(!r) return;
+    sortIt=r==='sort';
+  }
+  if(!sortIt) return addInto(files.map(f=>({f, day:e, stop:null})), e);
+  /* make the days and places the plan needs, then add */
+  const snap0=JSON.stringify(J.entries), made={};
+  const dayFor=k=>{ const g=plan.groups[k]; if(g.e) return g.e; if(made[k]) return made[k]; const d=newEntry(g.date||today()); J.entries.push(d); made[k]=d; return d; };
+  const npStop=new Map(), work=[];
+  plan.items.slice().sort((a,b)=>(a.m.time||9e15)-(b.m.time||9e15)).forEach(it=>{ let day=dayFor(it.key), stop=it.stop;
+    if(!day && e) day=e;
+    if(it.np){ stop=npStop.get(it.np); if(!stop){ stop={id:uid(6), name:'', ll:it.np.ll, cc:'', country:'', mode:'', src:'photo', note:'', media:[]}; day.stops.push(stop); npStop.set(it.np, stop); } }
+    work.push({f:it.f, day, stop}); });
+  /* new places in the order the photos were taken */
+  const ids=await addInto(work, e, true);
+  npStop.forEach(st=>{ GEO.reverse(st.ll).then(r=>{ st.name=st.name||r.name||'A place'; st.cc=st.cc||r.cc; st.country=st.country||r.country; const d=J&&J.entries.find(x=>x.stops.includes(st)); if(d) touch(d); if(d&&cur()===d) renderStops(d); MAPED.refresh(false); }).catch(()=>{ st.name=st.name||'A place'; }); });
+  const days=new Set(work.map(w=>w.day)), nNew=Object.keys(made).length;
+  const t=toast('✨ Sorted into '+days.size+' '+(days.size===1?'day':'days')+(nNew?' ('+nNew+' new)':'')+(npStop.size?' and '+npStop.size+' new '+(npStop.size===1?'place':'places'):'')+'. <a href="#" id="undoSort">Undo</a>', 12000);
+  $('#undoSort').onclick=ev=>{ ev.preventDefault(); t.classList.remove('show');
+    J.entries=JSON.parse(snap0); const home=(e&&J.entries.find(x=>x.id===e.id))||J.entries[0];
+    if(home){ ids.forEach(id=>home.media.push({id, cap:''})); curId=home.id; }
+    touch(null); renderWrite(true); toast('Undone: the photos are back on Day '+(home?dayNumber(home):'1')); };
+  if(e && !days.has(e) && days.size===1){ curId=[...days][0].id; }
+  renderWrite('fly');
+}
+/* resize, store and attach each file; returns the new media ids */
+async function addInto(work, view, quiet){
+  const ids=[], n=work.length; let k=0;
+  const prog=n>1?toast('📷 Adding 1 of '+n+'…', 600000):null;
+  for(const w of work){ k++; if(prog) prog.innerHTML='📷 Adding '+k+' of '+n+'…';
+    const f=w.f, isVid=/^video\//.test(f.type), tile=document.createElement('div'); tile.className='mitem busy';
+    tile.innerHTML='<div class="mth">'+(isVid?'🎬 Getting the video ready…':'📷 Adding…')+'</div><div class="prog"><i></i></div>';
+    if(cur()===w.day && $('#edTray')) $('#edTray').appendChild(tile);
     try{
       const rec=isVid?await processVideo(f, p=>{ const i=tile.querySelector('.prog i'); if(i) i.style.width=Math.round(p*100)+'%'; }):await processPhoto(f);
       tile.remove(); if(!rec) continue;
       rec.id=uid(); rec.jid=J.id; rec.added=Date.now();
-      await DB.put('media', rec); MEDIA[rec.id]=rec;
+      await DB.put('media', rec); MEDIA[rec.id]=rec; ids.push(rec.id);
       J.mediaMeta[rec.id]={t:rec.t, mime:rec.mime, w:rec.w, h:rec.h, dur:rec.dur, th:!!rec.th, po:!!rec.poster};
-      e.media.push({id:rec.id, cap:''});
+      w.day.media.push({id:rec.id, cap:''});
+      if(w.stop){ w.stop.media=w.stop.media||[]; w.stop.media.push(rec.id); }
       if(!J.coverId && rec.t==='photo'){ J.coverId=rec.id; J.metaUpdated=Date.now(); }
-      touch(e); if(cur()===e){ renderMedia(e); renderDays(); }
-      if(toStop){ toStop.media=toStop.media||[]; toStop.media.push(rec.id); touch(e); if(cur()===e){ renderStops(e); renderMedia(e); } }
-      else if(rec.ll) await addStop(e, {ll:rec.ll, src:'photo', mid:rec.id});
+      touch(w.day);
+      if(cur()===w.day){ renderMedia(w.day); renderStops(w.day); renderDays(); }
     }catch(err){ tile.remove(); toast('⚠️ '+esc(f.name)+': '+esc(err.message||err), 7000); }
   }
+  if(prog) prog.classList.remove('show');
+  if(!quiet && view) MAPED.refresh(false);
+  return ids;
+}
+/* ---- putting photos on places: drag, or tap 📍 then tap a place ---- */
+let PICK=null;
+function assignMedia(e, mid, i){
+  e.stops.forEach(s=>{ if(s.media){ const k=s.media.indexOf(mid); if(k>=0) s.media.splice(k,1); } });
+  if(i!=null && e.stops[i]){ e.stops[i].media=e.stops[i].media||[]; e.stops[i].media.push(mid); }
+  touch(e); endPick(); renderStops(e); renderMedia(e); MAPED.refresh(false);
+  toast(i!=null?'📍 Put on '+TOM.stopLabel(dayNumber(e),i)+' '+esc(e.stops[i].name||''):'Back with the day\'s own photos');
+}
+function startPick(e, mid){
+  if(PICK && PICK.mid===mid){ endPick(); return; }
+  if(!e.stops.length){ toast('Add a place first (in "Where did you go?")'); return; }
+  PICK={e, mid}; document.body.classList.add('picking'); $$('.mitem').forEach(x=>x.classList.toggle('pickme', x.dataset.m===mid));
+  toast('👆 Now tap a place in the list or on the map', 6000);
+}
+function endPick(){ PICK=null; document.body.classList.remove('picking'); $$('.mitem.pickme').forEach(x=>x.classList.remove('pickme')); }
+window.TOM_PICK=()=>PICK;
+window.TOM_DROP=(i, mid)=>{ const e=cur(); if(!e) return; assignMedia(e, mid||(PICK&&PICK.mid), i); };
+function dropZone(el, e, i){
+  el.addEventListener('dragover', ev=>{ if(!ev.dataTransfer.types.includes('text/tom-media')) return; ev.preventDefault(); ev.dataTransfer.dropEffect='move'; el.classList.add('dropon'); });
+  el.addEventListener('dragleave', ()=>el.classList.remove('dropon'));
+  el.addEventListener('drop', ev=>{ const mid=ev.dataTransfer.getData('text/tom-media'); el.classList.remove('dropon'); if(!mid) return; ev.preventDefault(); assignMedia(e, mid, i); });
 }
 function renderMedia(e){
   const box=$('#edMedia'); if(!box) return;
   const busy=$$('.mitem.busy', box);
-  const own={}, dn=dayNumber(e); e.stops.forEach((s,j)=>(s.media||[]).forEach(id=>{ own[id]=own[id]||TOM.stopLabel(dn,j); }));
-  box.innerHTML=e.media.filter(m=>MEDIA[m.id] && MEDIA[m.id].t!=='audio').map(m=>{ const r=MEDIA[m.id], th=blobUrl(r.id,'t',r.th||r.poster);
-    return '<div class="mitem'+(own[m.id]?' placed':'')+'" data-m="'+esc(m.id)+'"><div class="mth" style="background-image:url('+th+')">'+(r.t==='video'?'<span class="vb">▶ '+fmtTime(r.dur)+'</span>':'')+
-      (own[m.id]?'<span class="mpl" style="background:'+TOM.dayColor(dn)+'" title="Shown with place '+own[m.id]+', not in the day\'s own photos">📍 '+own[m.id]+'</span>':'')+'</div>'+
-      '<button class="mstar'+(J.coverId===m.id?' on':'')+'" title="Use as the journal cover">⭐</button><button class="mx" title="Remove">✕</button><input placeholder="Add a caption…" maxlength="120" value="'+esc(m.cap)+'"></div>'; }).join('');
-  busy.forEach(b=>box.appendChild(b));
+  const dn=dayNumber(e), col=TOM.dayColor(dn), owner={};
+  e.stops.forEach((s,j)=>(s.media||[]).forEach(id=>{ if(owner[id]==null) owner[id]=j; }));
+  const vis=e.media.filter(m=>MEDIA[m.id] && MEDIA[m.id].t!=='audio');
+  const tile=m=>{ const r=MEDIA[m.id], th=blobUrl(r.id,'t',r.th||r.poster);
+    return '<div class="mitem" data-m="'+esc(m.id)+'" draggable="true"><div class="mth" style="background-image:url('+th+')">'+(r.t==='video'?'<span class="vb">▶ '+fmtTime(r.dur)+'</span>':'')+'</div>'+
+      '<button class="mstar'+(J.coverId===m.id?' on':'')+'" title="Use as the journal cover">⭐</button><button class="mx" title="Remove">✕</button>'+
+      (e.stops.length?'<button class="mpin" title="Put on a place">📍</button>':'')+'<input placeholder="Add a caption…" maxlength="120" value="'+esc(m.cap)+'"></div>'; };
+  const loose=vis.filter(m=>owner[m.id]==null);
+  let h='<div class="mtray" data-drop="day"><div class="msub">Day photos'+(loose.length&&e.stops.length?'<span>Drag one onto a place, or tap its 📍</span>':'')+'</div><div class="mgrid" id="edTray">'+(loose.length?loose.map(tile).join(''):'<p class="hint mempty">'+(vis.length?'All of today\'s photos are on places.':'No photos yet.')+'</p>')+'</div></div>';
+  const placed=e.stops.map((s,j)=>({s, j, ms:vis.filter(m=>owner[m.id]===j)})).filter(x=>x.ms.length);
+  if(placed.length) h+='<div class="monpl"><div class="msub">On places<span>Drag back up to make it a day photo again</span></div>'+placed.map(x=>
+    '<div class="mgrp" data-drop="'+x.j+'"><div class="mgh"><b class="sn" style="background:'+col+'">'+TOM.stopLabel(dn,x.j)+'</b> '+esc(x.s.name||'A place')+'</div><div class="mgrid">'+x.ms.map(tile).join('')+'</div></div>').join('')+'</div>';
+  box.innerHTML=h;
+  busy.forEach(b2=>$('#edTray',box).appendChild(b2));
+  dropZone($('.mtray',box), e, null);
+  $$('.mgrp',box).forEach(g=>dropZone(g, e, +g.dataset.drop));
   $$('.mitem[data-m]', box).forEach(el=>{ const m=e.media.find(x=>x.id===el.dataset.m);
+    el.addEventListener('dragstart', ev=>{ ev.dataTransfer.setData('text/tom-media', m.id); ev.dataTransfer.effectAllowed='move'; document.body.classList.add('dragging'); });
+    el.addEventListener('dragend', ()=>document.body.classList.remove('dragging'));
     el.querySelector('input').oninput=ev=>{ m.cap=ev.target.value; touch(e); };
+    el.querySelector('input').addEventListener('dragstart', ev=>ev.preventDefault());
     el.querySelector('.mstar').onclick=()=>{ J.coverId=m.id; touchMeta(); renderMedia(e); toast('⭐ This is now the cover'); };
-    el.querySelector('.mth').onclick=()=>{ const r=MEDIA[m.id]; const z=document.createElement('div'); z.className='dlgbg'; z.innerHTML=r.t==='video'?'<video controls autoplay playsinline style="max-width:94vw;max-height:86vh" src="'+blobUrl(r.id,'f',r.blob)+'"></video>':'<img style="max-width:94vw;max-height:86vh;border-radius:8px" src="'+blobUrl(r.id,'f',r.blob)+'">'; z.onclick=ev=>{ if(ev.target===z) z.remove(); }; document.body.appendChild(z); };
+    const pin=el.querySelector('.mpin'); if(pin) pin.onclick=ev=>{ ev.stopPropagation(); startPick(e, m.id); };
+    el.querySelector('.mth').onclick=()=>{ if(PICK){ endPick(); return; } const r=MEDIA[m.id]; const z=document.createElement('div'); z.className='dlgbg'; z.innerHTML=r.t==='video'?'<video controls autoplay playsinline style="max-width:94vw;max-height:86vh" src="'+blobUrl(r.id,'f',r.blob)+'"></video>':'<img style="max-width:94vw;max-height:86vh;border-radius:8px" src="'+blobUrl(r.id,'f',r.blob)+'">'; z.onclick=ev=>{ if(ev.target===z) z.remove(); }; document.body.appendChild(z); };
     el.querySelector('.mx').onclick=()=>removeMedia(e, m); });
 }
 function removeMedia(e, m){
+  const owners=e.stops.filter(s=>(s.media||[]).includes(m.id)); owners.forEach(s=>s.media.splice(s.media.indexOf(m.id),1));
   const i=e.media.indexOf(m); e.media.splice(i,1); touch(e); renderMedia(e); renderVoices(e); renderDays();
   let undone=false; const t=toast('Removed. <a href="#" id="undoM">Undo</a>', 7000);
-  $('#undoM').onclick=ev=>{ ev.preventDefault(); undone=true; e.media.splice(i,0,m); touch(e); if(cur()===e){ renderMedia(e); renderVoices(e); renderDays(); } t.classList.remove('show'); };
+  $('#undoM').onclick=ev=>{ ev.preventDefault(); undone=true; e.media.splice(i,0,m); owners.forEach(s=>s.media.push(m.id)); renderStops(e); touch(e); if(cur()===e){ renderMedia(e); renderVoices(e); renderDays(); } t.classList.remove('show'); };
   setTimeout(async()=>{ if(undone) return; if(J && J.coverId===m.id){ const nx=J.entries.flatMap(x=>x.media).map(x=>MEDIA[x.id]).find(r=>r&&r.t==='photo'); J.coverId=nx?nx.id:''; touchMeta(); }
     if(J) delete J.mediaMeta[m.id]; await DB.del('media', m.id).catch(()=>{}); delete MEDIA[m.id]; }, 7500);
 }
@@ -2242,7 +2410,7 @@ async function startRec(e){
 function phoneTab(t){ $('#write').classList.toggle('ph-map', t==='map'); $('#write').classList.toggle('ph-story', t!=='map'); $$('#phTabs button').forEach(b=>b.classList.toggle('on', b.dataset.t===t)); if(t==='map') setTimeout(()=>MAPED.resize(),50); }
 
 /* ================= the map editor ================= */
-/* the older Write map (Leaflet), kept for devices that cannot run the main map engine */
+/* the older Make map (Leaflet), kept for devices that cannot run the main map engine */
 const MAPED_L=(()=>{
   let flown=false, map=null, trip=null, stopsL=null, itemsL=null, temp=null, tool='look', color='#e8684a', width=5, stk='⭐', stkSize=2, stkCat='Fun', rmode='walk', lsize=2, routePts=[], drawing=null, undo=[], base=null, baseKey='', gl=null, glSig='', glBusy=false;
   const COLORS=['#e8684a','#f6c34a','#2f9e5b','#2f7d78','#3466c2','#8a4fbf','#24303a','#ffffff'];
@@ -2440,7 +2608,35 @@ async function deleteJournal(){
   toast('Journal deleted'); showHome();
 }
 
-/* ================= the Write map on the main map engine (MapLibre) =================
+/* ================= INSTRUCTIONS ================= */
+function showHelp(){
+  const step=(e,t,d)=>'<li><span class="hle">'+e+'</span><div><b>'+t+'</b><span>'+d+'</span></div></li>';
+  dialog({title:'How to use Trip-O-Matic', wide:true, body:
+    '<ol class="hsteps">'+
+    step('✨','Start a journal','On the start page, press <b>＋ Start a new journal</b> and give your trip a name.')+
+    step('📅','One page for each day','In <b>✏️ Make</b>, press <b>＋ New day</b> each day of the trip.')+
+    step('📍','Where did you go?','Add places with <b>I\'m here</b>, <b>Find a place</b>, or by tapping the map. They get numbers like 2.1, 2.2.')+
+    step('📷','Add photos and videos','Photos that know when and where they were taken can sort themselves into the right day and place. Use <b>📥 Photos from the trip</b> to add lots at once.')+
+    step('👆','Put photos on places','Drag a photo onto a place, or tap its <b>📍</b> and then tap the place. Press <b>📝</b> next to a place to write about it.')+
+    step('😀','Decorate the map','Add stickers, notes, words, drawings and routes with the tools on the map.')+
+    step('✏️','Tell your story','Pick your mood and the weather, answer a question, write about your day, or record a voice note.')+
+    step('📖','Read it','<b>Read</b> shows your journal as a book, a scrolling story, or a map.')+
+    step('🚀','Share it','<b>Share</b> puts it online for family, backs it up, or downloads it.')+
+    '</ol><p class="hnote">Everything saves by itself as you go.</p>'+
+    '<details class="hmore"><summary>More detail (for grown-ups)</summary><div class="hdet">'+
+    '<h4>Days</h4><p>Days are sorted by date, and the day number comes from the date, so a skipped day keeps the real numbering. Delete a day with the 🗑 beside it in the day list (you can undo straight after). <b>🙈 Keep this day private</b> leaves it out of everything shared or downloaded.</p>'+
+    '<h4>Places</h4><p>Places are numbered <i>day.place</i> (2.1, 2.2, then 3.1), and each day has its own colour. Choose how you got to each place (walk, train, plane…) so the journey lines and distances are right. <b>📝</b> opens a short note and the place\'s own photos; readers tap the place on any map to see them. Drag a place\'s number on the map to move it.</p>'+
+    '<h4>Photos and videos</h4><p>Photos are resized for the journal. Videos keep up to 30 seconds and are made smaller while they play, so keep the page open until the bar finishes. When added photos carry a date and location, Trip-O-Matic asks once whether to sort them: each goes to the day it was taken (making a new day if needed) and to a place within about 400 m, or a new place. Photos without a date stay on the day you are on. <b>Undo</b> appears straight after sorting.</p>'+
+    '<p>A day has <b>Day photos</b> (shown in the day\'s own gallery) and photos <b>On places</b> (shown on the place\'s card and in <i>Places today</i>). Drag a photo between them, onto a place in the list, or onto a numbered place on the map. On a phone, tap <b>📍</b> on the photo, then the place. ⭐ makes a photo the cover.</p>'+
+    '<h4>The map</h4><p>Tools: ✋ Look (move the map, drag things, tap a note to change it), 📍 Place, 😀 Sticker, 📌 Note, 🔤 Words, ✏️ Draw, 〰️ Route, 🧽 Erase, ↩️ Undo. The buttons at the bottom right choose <b>Light</b>, <b>Streets</b> or <b>Satellite</b>; readers see the same map. <b>🌍 Globe</b> shows the whole trip on a globe.</p>'+
+    '<h4>Reading</h4><p><b>Book</b> turns pages; once a page is open its map can be dragged and zoomed, and <b>⤢ Enlarge</b> opens a big map. <b>Scroll</b> is a story where the map follows along. <b>Map</b> shows the whole trip; tap a day for its page. Trips through more than one country start on a globe (change this in the journal\'s cover settings, by tapping its title). <b>⬇ PDF</b> and <b>⬇ Web page</b> download a copy.</p>'+
+    '<h4>Sharing and keeping it safe</h4><p><b>Share online</b> makes a private link (add a passcode if you like) or a public page; press <b>Update</b> after changes. The first time, a device asks for the family sharing code. <b>Cloud backup</b> saves everything to your Google Drive or OneDrive, so you can carry on writing on another device with <b>Open from Google Drive / OneDrive</b> on the start page. A <b>backup file (.trip)</b> holds the whole journal and can be opened on any device.</p>'+
+    '<h4>Good to know</h4><p>Journals are kept in this browser on this device, so turn on cloud backup or save a backup file now and then. On iPhone, add the page to the Home Screen, and in the photo picker turn on <b>Options → Location</b> so photos can place themselves. Maps, place search and sharing need the internet; writing works offline.</p>'+
+    '</div></details>',
+    buttons:[{label:'Got it', value:true}]});
+}
+
+/* ================= the Make map on the main map engine (MapLibre) =================
    Same tools as before; the map no longer blinks while zooming, and the globe is the same map. */
 const MAPED_GL=(()=>{
   let map=null, ready=null, tool='look', color='#e8684a', width=5, stk='⭐', stkSize=2, stkCat='Fun', rmode='walk', lsize=2, routePts=[], drawing=null, undo=[],
@@ -2581,10 +2777,15 @@ const MAPED_GL=(()=>{
       return; }
     e.stops.forEach((s,i)=>{ if(!TOM.okLL(s.ll)) return;
       const m=mk('<span style="background:'+TOM.dayColor(dn)+'">'+TOM.stopLabel(dn,i)+(TOM.hasInfo(s)?'<i>ⓘ</i>':'')+'</span>','jv-stp', s.ll, {title:s.name,
-        click:()=>{ if(tool==='erase'){ snap(); e.stops.splice(i,1); touch(e); renderStops(e); refresh(false); return; }
+        click:()=>{ const pk=window.TOM_PICK&&window.TOM_PICK(); if(pk){ window.TOM_DROP(i); return; }
+          if(tool==='erase'){ snap(); e.stops.splice(i,1); touch(e); renderStops(e); refresh(false); return; }
           if(tool==='look'){ openInfo.add(s.id); renderStops(e); if(window.innerWidth<=760) phoneTab('story'); const w=$$('#edStops .stopw')[i]; if(w) w.scrollIntoView({behavior:'smooth', block:'center'}); } },
         drag:tool==='look'?ll=>{ snap(); s.ll=[+ll[0].toFixed(5), +ll[1].toFixed(5)]; touch(e); refresh(false); }:null});
-      m._k='stop'; m.getElement().style.zIndex=3; });
+      m._k='stop'; const el=m.getElement(); el.style.zIndex=3;
+      /* photos can be dropped straight onto a numbered place on the map */
+      el.addEventListener('dragover', ev=>{ if(!ev.dataTransfer.types.includes('text/tom-media')) return; ev.preventDefault(); el.classList.add('dropon'); });
+      el.addEventListener('dragleave', ()=>el.classList.remove('dropon'));
+      el.addEventListener('drop', ev=>{ const mid=ev.dataTransfer.getData('text/tom-media'); el.classList.remove('dropon'); if(!mid) return; ev.preventDefault(); window.TOM_DROP(i, mid); }); });
   }
   function drawTrip(){
     if(!src('legs')) return; const s=sorted(), e=cur(), i=s.indexOf(e);
@@ -2638,7 +2839,7 @@ const MAPED_GL=(()=>{
   return {init, refresh, tool:t=>{ if(map&&ready) setTool(t); }, snap, resize:()=>{ if(map) map.resize(); }};
 })();
 
-/* which Write map to use: the main engine when this device can run it, the older map otherwise */
+/* which Make map to use: the main engine when this device can run it, the older map otherwise */
 const MAPED=(()=>{
   let impl=null, choosing=null, calls=[];
   function choose(){
@@ -3017,13 +3218,18 @@ async function showPublished(id){
   $('#hOpen').onclick=()=>$('#hFile').click();
   $('#hFile').onchange=ev=>{ const f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(f) SHARE.restore(f); };
   $('#dNew').onclick=addDay;
+  $('#dTrip').onclick=()=>$('#dTripFile').click();
+  $('#dTripFile').onchange=ev=>{ const fs=Array.from(ev.target.files||[]); ev.target.value=''; if(fs.length && J) addFiles(cur()||null, fs, null, true); };
+  $('#helpBtn').onclick=showHelp;
+  document.addEventListener('keydown', ev=>{ if(ev.key==='Escape' && window.TOM_PICK && window.TOM_PICK()){ endPick(); } });
   $$('#phTabs button').forEach(b=>b.onclick=()=>phoneTab(b.dataset.t));
   phoneTab('story');
   window.addEventListener('resize', debounce(()=>{ if(view==='write') MAPED.resize(); }, 200));
   if(!window.L){ document.body.insertAdjacentHTML('afterbegin','<div style="background:#fdebe5;padding:8px 14px;font-weight:700;font-size:14px">Maps need an internet connection. You can still write, and the maps will appear when you are back online.</div>'); window.L=null; }
   try{ await DB.all('journals'); }catch(e){ $('#home').innerHTML='<div class="blankslate"><div class="big">⚠️</div><h2>Storage is switched off</h2><p>'+esc(e.message||e)+'. Try a normal (not private) browser window.</p></div>'; $('#home').hidden=false; return; }
-  let last=null; try{ last=localStorage.getItem('tom.last'); }catch(_){ }
-  if(last && await DB.get('journals', last)) openJournal(last); else showHome();
+  /* the address remembers the open journal and tab, so a refresh comes back to the same screen (and the start page stays the start page) */
+  const hm=/^#j=([a-z0-9]+)(?:\/(make|read|share))?/.exec(location.hash||'');
+  if(hm && await DB.get('journals', hm[1])) openJournal(hm[1], hm[2]==='make'||!hm[2]?'write':hm[2]); else showHome();
 })();
 
 </script>
