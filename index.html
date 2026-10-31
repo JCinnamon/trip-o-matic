@@ -772,6 +772,18 @@ main{flex:1;min-height:0;position:relative;}
 .stopw{background:var(--bg);border-radius:12px;}
 .stopw .stop{background:none;}
 .stopw.open{box-shadow:inset 0 0 0 2px var(--teal);}
+/* rearranging places: drag the ⠿ grip, or tap ▲ ▼ */
+.sgrip{flex:none;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;color:var(--muted);font-size:18px;line-height:1;padding:4px 2px;margin-right:-4px;}
+.smv{flex:none;display:flex;flex-direction:column;gap:1px;margin-right:-2px;}
+.smv button{border:0;background:none;color:var(--muted);font-size:10px;line-height:1;padding:2px 3px;border-radius:5px;}
+.smv button:disabled{opacity:.25;}
+.smv button:not(:disabled):hover{background:#fff;color:var(--teal);}
+.stopw.sdrag{opacity:.9;box-shadow:0 6px 18px rgba(0,0,0,.18);position:relative;z-index:5;}
+.stopw.sdrag .sgrip{cursor:grabbing;}
+.stopw.sgap-b{box-shadow:inset 0 -3px 0 var(--teal);} .stopw.sgap-a{box-shadow:inset 0 3px 0 var(--teal);}
+body.sdragging{cursor:grabbing;user-select:none;-webkit-user-select:none;}
+@media (max-width:560px){ .stop{flex-wrap:wrap;row-gap:4px;} .stop select{order:1;flex:1 1 100%;margin-left:36px;} }
+.stime{border:1px solid var(--line);background:#fff;border-radius:8px;padding:2px 8px;font-size:12px;font-weight:800;margin-left:8px;vertical-align:middle;}
 .sinfo{border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 7px;font-size:15px;position:relative;}
 .sinfo.has{background:var(--sun-l);border-color:var(--sun);}
 .sinfo b{position:absolute;top:-6px;right:-6px;background:var(--teal);color:#fff;font-size:10px;border-radius:8px;min-width:16px;height:16px;line-height:16px;}
@@ -2294,7 +2306,7 @@ function renderWrite(fit){
     '<div class="card"><div class="dtop"><div class="dbadge"><span>Day</span><b>'+dayNumber(e)+'</b></div><div class="grow">'+
       '<input class="ttl" id="edTitle" maxlength="90" placeholder="Give today a title…" value="'+esc(e.title)+'">'+
       '<div class="drow"><input type="date" id="edDate" value="'+esc(e.date)+'"><span class="hint">'+esc(TOM.fmtDate(e.date))+'</span></div></div></div></div>'+
-    '<div class="card"><h3><span class="em">📍</span> Where did you go?<small>in order</small></h3><div class="stops" id="edStops"></div>'+
+    '<div class="card"><h3><span class="em">📍</span> Where did you go?<small>in order</small><button class="stime" id="stSort" hidden title="Put the places in the order their photos were taken">⏱ Sort by time</button></h3><div class="stops" id="edStops"></div>'+
       '<div class="btnrow"><button class="btn small" id="stHere">📍 I\'m here</button><button class="btn small alt" id="stFind">🔎 Find a place</button><button class="btn small alt" id="stTap">👆 Tap the map</button></div>'+
       '<div class="searchbox" id="stSearch" hidden><input type="text" id="stQ" placeholder="Type a place, like Kyoto Station or Eiffel Tower" autocomplete="off"><div class="sresults" id="stRes" hidden></div></div>'+
       '<p class="hint" style="margin:8px 0 0">Photos that know where they were taken add their place by themselves.</p></div>'+
@@ -2375,7 +2387,9 @@ function renderStops(e){
   const vis=e.media.map(m=>MEDIA[m.id]).filter(r=>r&&(r.t==='photo'||r.t==='video'));
   const ownerOf={}; e.stops.forEach((s,j)=>(s.media||[]).forEach(id=>{ if(ownerOf[id]==null) ownerOf[id]=j; }));
   box.innerHTML=e.stops.length?e.stops.map((s,i)=>{ const open=openInfo.has(s.id), n=(s.media||[]).filter(id=>MEDIA[id]).length;
-    return '<div class="stopw'+(open?' open':'')+'"><div class="stop"><span class="sn" style="background:'+col+'">'+TOM.stopLabel(dn,i)+'</span><span>'+(s.cc?TOM.flag(s.cc):'')+'</span><input class="snm" data-i="'+i+'" value="'+esc(s.name)+'" maxlength="60" aria-label="Place name">'+
+    const tk=stopTime(s), N=e.stops.length;
+    return '<div class="stopw'+(open?' open':'')+'"><div class="stop">'+(N>1?'<span class="sgrip" data-g="'+i+'" title="Drag to move this place">⠿</span><span class="smv"><button data-up="'+i+'" title="Move up"'+(i?'':' disabled')+'>▲</button><button data-dn="'+i+'" title="Move down"'+(i<N-1?'':' disabled')+'>▼</button></span>':'')+
+    '<span class="sn" style="background:'+col+'"'+(tk?' title="First photo here: '+esc(new Date(tk).toLocaleString([], {weekday:'short', hour:'numeric', minute:'2-digit'}))+'"':'')+'>'+TOM.stopLabel(dn,i)+'</span><span>'+(s.cc?TOM.flag(s.cc):'')+'</span><input class="snm" data-i="'+i+'" value="'+esc(s.name)+'" maxlength="60" aria-label="Place name">'+
     '<select data-m="'+i+'" title="How did you get here?"><option value="">'+(s.mode?'':'✨ ')+'got here by…</option>'+Object.keys(TOM.MODES).map(k=>'<option value="'+k+'"'+(s.mode===k?' selected':'')+'>'+TOM.MODES[k].e+' '+TOM.MODES[k].n+'</option>').join('')+'</select>'+
     '<button class="sinfo'+(TOM.hasInfo(s)?' has':'')+'" data-o="'+i+'" title="More about this place">📝'+(n?'<b>'+n+'</b>':'')+'</button><button class="x" data-x="'+i+'" title="Remove">✕</button></div>'+
     (open?'<div class="sbox"><div class="sbl">More about '+esc(s.name||'this place')+' <small>(readers tap '+TOM.stopLabel(dn,i)+' on the map to see it)</small></div>'+
@@ -2386,11 +2400,56 @@ function renderStops(e){
   $$('.snm',box).forEach(inp=>inp.oninput=()=>{ e.stops[+inp.dataset.i].name=inp.value; touch(e); });
   $$('select',box).forEach(sel=>sel.onchange=()=>{ e.stops[+sel.dataset.m].mode=sel.value; touch(e); MAPED.refresh(false); });
   $$('[data-x]',box).forEach(b=>b.onclick=()=>{ MAPED.snap(); e.stops.splice(+b.dataset.x,1); touch(e); renderStops(e); MAPED.refresh(false); });
+  $$('[data-up]',box).forEach(b=>b.onclick=()=>moveStop(e, +b.dataset.up, +b.dataset.up-1));
+  $$('[data-dn]',box).forEach(b=>b.onclick=()=>moveStop(e, +b.dataset.dn, +b.dataset.dn+1));
+  $$('[data-g]',box).forEach(g=>gripDrag(g, box, e));
+  const sb=$('#stSort'); if(sb){ sb.hidden=!timeSort(e, true); sb.onclick=()=>{ MAPED.snap(); timeSort(e); touch(e); renderStops(e); renderMedia(e); MAPED.refresh(false); toast('⏱ Places sorted by when their photos were taken'); }; }
   $$('[data-o]',box).forEach(b=>b.onclick=()=>{ const id=e.stops[+b.dataset.o].id; if(openInfo.has(id)) openInfo.delete(id); else openInfo.add(id); renderStops(e); const t=box.querySelector('.stopw.open textarea'); if(t && openInfo.has(id)) t.focus(); });
   $$('[data-n]',box).forEach(t=>t.oninput=()=>{ e.stops[+t.dataset.n].note=t.value; touch(e); const b=box.querySelector('[data-o="'+t.dataset.n+'"]'); if(b) b.classList.toggle('has', TOM.hasInfo(e.stops[+t.dataset.n])); });
   $$('[data-p]',box).forEach(b=>b.onclick=()=>{ const st=e.stops[+b.dataset.p]; st.media=st.media||[]; const k=st.media.indexOf(b.dataset.id); if(k>=0) st.media.splice(k,1); else st.media.push(b.dataset.id); touch(e); renderStops(e); renderMedia(e); MAPED.refresh(false); });
   $$('[data-a]',box).forEach(b=>b.onclick=()=>{ const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*,video/*'; inp.multiple=true;
     inp.onchange=()=>{ const fs=Array.from(inp.files||[]); if(fs.length) addFiles(e, fs, e.stops[+b.dataset.a]); }; inp.click(); });
+}
+
+/* ---- the order of places: set by photo times, changed by hand ---- */
+/* when the earliest photo at a place was taken (null for places with no dated photos) */
+function stopTime(s){ let t=null; (s.media||[]).forEach(id=>{ const k=J.mediaMeta[id]&&J.mediaMeta[id].tk; if(k && (t==null||k<t)) t=k; }); return t; }
+/* put timed places in photo-time order; a place with no time stays just after the place it follows now.
+   dry: only report whether the order would change */
+function timeSort(e, dry){
+  const groups=[]; let g=null;
+  e.stops.forEach(s=>{ const t=stopTime(s); if(t!=null || !g){ g={t, list:[]}; groups.push(g); } g.list.push(s); });
+  /* only a leading run of untimed places can lack a time; it stays first */
+  const lead=groups[0] && groups[0].t==null ? groups.shift() : null;
+  const sorted=(lead?[lead]:[]).concat(groups.slice().sort((a,b)=>a.t-b.t));
+  const out=[].concat(...sorted.map(x=>x.list)), changed=out.some((s,i)=>s!==e.stops[i]);
+  if(!dry && changed) e.stops.splice(0, e.stops.length, ...out);
+  return changed;
+}
+function moveStop(e, from, to){
+  if(from===to || to<0 || to>=e.stops.length) return;
+  MAPED.snap(); const [s]=e.stops.splice(from,1); e.stops.splice(to,0,s);
+  touch(e); renderStops(e); renderMedia(e); MAPED.refresh(false);
+  const b=$('#edStops [data-g="'+to+'"]'); if(b) b.closest('.stopw').scrollIntoView({block:'nearest'});
+}
+/* drag a place by its ⠿ grip (mouse, finger or pen) */
+function gripDrag(grip, box, e){
+  grip.addEventListener('pointerdown', ev=>{
+    if(ev.button) return; ev.preventDefault();
+    const from=+grip.dataset.g, rows=$$('.stopw',box), row=rows[from], others=rows.filter(r=>r!==row), y0=ev.clientY;
+    let to=from;
+    try{ grip.setPointerCapture(ev.pointerId); }catch(_){ }
+    row.classList.add('sdrag'); document.body.classList.add('sdragging');
+    const clear=()=>others.forEach(r=>r.classList.remove('sgap-a','sgap-b'));
+    const move=m=>{ row.style.transform='translateY('+(m.clientY-y0)+'px)';
+      to=others.filter(r=>{ const b=r.getBoundingClientRect(); return b.top+b.height/2<m.clientY; }).length;
+      clear(); if(to===from) return;
+      if(others[to]) others[to].classList.add('sgap-a'); else if(others[to-1]) others[to-1].classList.add('sgap-b'); };
+    const end=()=>{ grip.removeEventListener('pointermove', move); grip.removeEventListener('pointerup', end); grip.removeEventListener('pointercancel', end);
+      clear(); row.classList.remove('sdrag'); row.style.transform=''; document.body.classList.remove('sdragging');
+      if(to!==from) moveStop(e, from, to); };
+    grip.addEventListener('pointermove', move); grip.addEventListener('pointerup', end); grip.addEventListener('pointercancel', end);
+  });
 }
 
 /* ---- photos and videos ---- */
@@ -2444,7 +2503,7 @@ async function addFiles(e, files, toStop, whole){
     if(!r) return;
     sortIt=r==='sort';
   }
-  if(!sortIt) return addInto(files.map(f=>({f, day:e, stop:null})), e);
+  if(!sortIt) return addInto(files.map((f,i)=>({f, day:e, stop:null, tk:metas[i].time||null})), e);
   /* make the days and places the plan needs, then add */
   const snap0=JSON.stringify(J.entries), made={};
   const dayFor=k=>{ const g=plan.groups[k]; if(g.e) return g.e; if(made[k]) return made[k]; const d=newEntry(g.date||today()); J.entries.push(d); made[k]=d; return d; };
@@ -2452,7 +2511,7 @@ async function addFiles(e, files, toStop, whole){
   plan.items.slice().sort((a,b)=>(a.m.time||9e15)-(b.m.time||9e15)).forEach(it=>{ let day=dayFor(it.key), stop=it.stop;
     if(!day && e) day=e;
     if(it.np){ stop=npStop.get(it.np); if(!stop){ stop={id:uid(6), name:'', ll:it.np.ll, cc:'', country:'', mode:'', src:'photo', note:'', media:[]}; day.stops.push(stop); npStop.set(it.np, stop); } }
-    work.push({f:it.f, day, stop}); });
+    work.push({f:it.f, day, stop, tk:it.m.time||null}); });
   /* new places in the order the photos were taken */
   const ids=await addInto(work, e, true);
   npStop.forEach(st=>{ GEO.reverse(st.ll).then(r=>{ st.name=st.name||r.name||'A place'; st.cc=st.cc||r.cc; st.country=st.country||r.country; const d=J&&J.entries.find(x=>x.stops.includes(st)); if(d) touch(d); if(d&&cur()===d) renderStops(d); MAPED.refresh(false); }).catch(()=>{ st.name=st.name||'A place'; }); });
@@ -2477,8 +2536,10 @@ async function addInto(work, view, quiet){
       const rec=isVid?await processVideo(f, p=>{ const i=tile.querySelector('.prog i'); if(i) i.style.width=Math.round(p*100)+'%'; }):await processPhoto(f);
       tile.remove(); if(!rec) continue;
       rec.id=uid(); rec.jid=J.id; rec.added=Date.now();
+      const tk=w.tk!==undefined?w.tk:(isImg(f)?(await photoMeta(f)).time:null); if(tk) rec.tk=tk;
       await DB.put('media', rec); MEDIA[rec.id]=rec; ids.push(rec.id);
       J.mediaMeta[rec.id]={t:rec.t, mime:rec.mime, w:rec.w, h:rec.h, dur:rec.dur, th:!!rec.th, po:!!rec.poster};
+      if(tk) J.mediaMeta[rec.id].tk=tk;
       w.day.media.push({id:rec.id, cap:''});
       if(w.stop){ w.stop.media=w.stop.media||[]; w.stop.media.push(rec.id); }
       if(!J.coverId && rec.t==='photo'){ J.coverId=rec.id; J.metaUpdated=Date.now(); }
@@ -2487,6 +2548,8 @@ async function addInto(work, view, quiet){
     }catch(err){ tile.remove(); toast('⚠️ '+esc(f.name)+': '+esc(err.message||err), 7000); }
   }
   if(prog) prog.classList.remove('show');
+  /* new photos re-sort their days' places by when the photos were taken */
+  new Set(work.filter(w=>w.stop).map(w=>w.day)).forEach(d=>{ if(timeSort(d)){ touch(d); if(cur()===d){ renderStops(d); renderMedia(d); } } });
   if(!quiet && view) MAPED.refresh(false);
   return ids;
 }
@@ -2522,7 +2585,7 @@ window.TOM_MAPFILES=async(files, ll)=>{ const e=cur(); if(!e) return;
   files.forEach((f,k)=>{ const at=(metas[k]&&TOM.okLL(metas[k].ll))?metas[k].ll:ll;
     let st=e.stops.find(x=>x.ll && TOM.dist(x.ll, at)<(at===ll?0.05:0.4));
     if(!st){ st={id:uid(6), name:'', ll:[+at[0].toFixed(5), +at[1].toFixed(5)], cc:'', country:'', mode:'', src:'photo', note:'', media:[]}; e.stops.push(st); made.push(st); }
-    work.push({f, day:e, stop:st}); });
+    work.push({f, day:e, stop:st, tk:metas[k].time||null}); });
   touch(e); renderStops(e); MAPED.refresh(false);
   await addInto(work, e);
   for(const st of made){ try{ const g=await GEO.reverse(st.ll); st.name=st.name||g.name||'A place'; st.cc=g.cc; st.country=g.country; }catch(_){ st.name=st.name||'A place'; } }
