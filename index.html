@@ -783,7 +783,9 @@ main{flex:1;min-height:0;position:relative;}
 .stopw.sgap-b{box-shadow:inset 0 -3px 0 var(--teal);} .stopw.sgap-a{box-shadow:inset 0 3px 0 var(--teal);}
 body.sdragging{cursor:grabbing;user-select:none;-webkit-user-select:none;}
 @media (max-width:560px){ .stop{flex-wrap:wrap;row-gap:4px;} .stop select{order:1;flex:1 1 100%;margin-left:36px;} }
-.stime{border:1px solid var(--line);background:#fff;border-radius:8px;padding:2px 8px;font-size:12px;font-weight:800;margin-left:8px;vertical-align:middle;}
+.sord{display:inline-flex;border:1px solid var(--line);background:#fff;border-radius:9px;padding:2px;margin-left:8px;vertical-align:middle;}
+.sord button{border:0;background:none;border-radius:7px;padding:3px 8px;font-size:12px;font-weight:800;color:var(--muted);white-space:nowrap;}
+.sord button.on{background:var(--teal);color:#fff;}
 .sinfo{border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 7px;font-size:15px;position:relative;}
 .sinfo.has{background:var(--sun-l);border-color:var(--sun);}
 .sinfo b{position:absolute;top:-6px;right:-6px;background:var(--teal);color:#fff;font-size:10px;border-radius:8px;min-width:16px;height:16px;line-height:16px;}
@@ -2306,7 +2308,7 @@ function renderWrite(fit){
     '<div class="card"><div class="dtop"><div class="dbadge"><span>Day</span><b>'+dayNumber(e)+'</b></div><div class="grow">'+
       '<input class="ttl" id="edTitle" maxlength="90" placeholder="Give today a title…" value="'+esc(e.title)+'">'+
       '<div class="drow"><input type="date" id="edDate" value="'+esc(e.date)+'"><span class="hint">'+esc(TOM.fmtDate(e.date))+'</span></div></div></div></div>'+
-    '<div class="card"><h3><span class="em">📍</span> Where did you go?<small>in order</small><button class="stime" id="stSort" hidden title="Put the places in the order their photos were taken">⏱ Sort by time</button></h3><div class="stops" id="edStops"></div>'+
+    '<div class="card"><h3><span class="em">📍</span> Where did you go?<small>in order</small><span class="sord" id="stOrd" role="group" aria-label="Order of places"><button data-ord="time" title="Keep places in the order their photos were taken">⏱ By time</button><button data-ord="place" title="Keep the order you set by dragging or with ▲ ▼">📍 By place</button></span></h3><div class="stops" id="edStops"></div>'+
       '<div class="btnrow"><button class="btn small" id="stHere">📍 I\'m here</button><button class="btn small alt" id="stFind">🔎 Find a place</button><button class="btn small alt" id="stTap">👆 Tap the map</button></div>'+
       '<div class="searchbox" id="stSearch" hidden><input type="text" id="stQ" placeholder="Type a place, like Kyoto Station or Eiffel Tower" autocomplete="off"><div class="sresults" id="stRes" hidden></div></div>'+
       '<p class="hint" style="margin:8px 0 0">Photos that know where they were taken add their place by themselves.</p></div>'+
@@ -2403,7 +2405,8 @@ function renderStops(e){
   $$('[data-up]',box).forEach(b=>b.onclick=()=>moveStop(e, +b.dataset.up, +b.dataset.up-1));
   $$('[data-dn]',box).forEach(b=>b.onclick=()=>moveStop(e, +b.dataset.dn, +b.dataset.dn+1));
   $$('[data-g]',box).forEach(g=>gripDrag(g, box, e));
-  const sb=$('#stSort'); if(sb){ sb.hidden=!timeSort(e, true); sb.onclick=()=>{ MAPED.snap(); timeSort(e); touch(e); renderStops(e); renderMedia(e); MAPED.refresh(false); toast('⏱ Places sorted by when their photos were taken'); }; }
+  $$('#stOrd [data-ord]').forEach(b=>{ b.classList.toggle('on', b.dataset.ord===(e.order||'time')); b.setAttribute('aria-pressed', b.dataset.ord===(e.order||'time'));
+    b.onclick=()=>setOrder(e, b.dataset.ord); });
   $$('[data-o]',box).forEach(b=>b.onclick=()=>{ const id=e.stops[+b.dataset.o].id; if(openInfo.has(id)) openInfo.delete(id); else openInfo.add(id); renderStops(e); const t=box.querySelector('.stopw.open textarea'); if(t && openInfo.has(id)) t.focus(); });
   $$('[data-n]',box).forEach(t=>t.oninput=()=>{ e.stops[+t.dataset.n].note=t.value; touch(e); const b=box.querySelector('[data-o="'+t.dataset.n+'"]'); if(b) b.classList.toggle('has', TOM.hasInfo(e.stops[+t.dataset.n])); });
   $$('[data-p]',box).forEach(b=>b.onclick=()=>{ const st=e.stops[+b.dataset.p]; st.media=st.media||[]; const k=st.media.indexOf(b.dataset.id); if(k>=0) st.media.splice(k,1); else st.media.push(b.dataset.id); touch(e); renderStops(e); renderMedia(e); MAPED.refresh(false); });
@@ -2426,9 +2429,17 @@ function timeSort(e, dry){
   if(!dry && changed) e.stops.splice(0, e.stops.length, ...out);
   return changed;
 }
+/* a day's places are ordered by photo time (the default) or by place: the order set by hand, which uploads leave alone */
+function setOrder(e, ord){
+  if((e.order||'time')===ord) return;
+  if(ord==='place'){ e.order='place'; touch(e); renderStops(e); toast('📍 Places stay in your order. New photos won\'t move them.'); return; }
+  delete e.order; MAPED.snap(); timeSort(e); touch(e); renderStops(e); renderMedia(e); MAPED.refresh(false);
+  toast('⏱ Places sorted by when their photos were taken');
+}
 function moveStop(e, from, to){
   if(from===to || to<0 || to>=e.stops.length) return;
   MAPED.snap(); const [s]=e.stops.splice(from,1); e.stops.splice(to,0,s);
+  if(e.order!=='place'){ e.order='place'; toast('📍 Switched to By place, so new photos keep your order'); }
   touch(e); renderStops(e); renderMedia(e); MAPED.refresh(false);
   const b=$('#edStops [data-g="'+to+'"]'); if(b) b.closest('.stopw').scrollIntoView({block:'nearest'});
 }
@@ -2548,8 +2559,8 @@ async function addInto(work, view, quiet){
     }catch(err){ tile.remove(); toast('⚠️ '+esc(f.name)+': '+esc(err.message||err), 7000); }
   }
   if(prog) prog.classList.remove('show');
-  /* new photos re-sort their days' places by when the photos were taken */
-  new Set(work.filter(w=>w.stop).map(w=>w.day)).forEach(d=>{ if(timeSort(d)){ touch(d); if(cur()===d){ renderStops(d); renderMedia(d); } } });
+  /* new photos re-sort their days' places (unless a day is set to By place) by when the photos were taken */
+  new Set(work.filter(w=>w.stop && w.day.order!=='place').map(w=>w.day)).forEach(d=>{ if(timeSort(d)){ touch(d); if(cur()===d){ renderStops(d); renderMedia(d); } } });
   if(!quiet && view) MAPED.refresh(false);
   return ids;
 }
