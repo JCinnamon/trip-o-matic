@@ -48,7 +48,9 @@ The journal saves as you type ("Saved ✓" at top right). Refreshing the browser
 
 ### Place numbers
 
-Places are numbered **day.place**: 1.1 and 1.2 on day 1, then 2.1, 2.2 on day 2. Each day has its own colour on every map, list and page, so places from different days never get mixed up. The numbering is automatic and updates when places are added, removed or reordered by date.
+Places are numbered **day.place**: 1.1 and 1.2 on day 1, then 2.1, 2.2 on day 2. Each day has its own colour on every map, list and page, so places from different days never get mixed up. The numbering is automatic and updates when places are added, removed or moved.
+
+**Order of places.** Places from photos go in the order the photos were taken: each place takes the time of its earliest photo, and adding photos re-sorts the day by those times. Places added by hand (I'm here, Find a place, Tap the map) have no time and stay just after the place they follow. To change the order, drag a place by its ⠿ grip or tap ▲ ▼ (1.3 can become 1.1, and the numbers follow). The next photo upload on that day sorts by time again; **⏱ Sort by time** next to *Where did you go?* does the same at any time. ↩️ Undo on the map undoes a move.
 
 ## The map in Make
 
