@@ -40,7 +40,7 @@ The journal saves as you type ("Saved ✓" at top right). Refreshing the browser
 - **Sorting photos by date and place.** When added photos carry the date and location they were taken, Trip-O-Matic asks once: *Sort them for me* puts each on the day it was taken (making new days as needed) and on a place within about 400 m, or a new place; *Keep them all on Day N* leaves them on the current day. Photos without a date stay on the current day. **Undo** appears straight after sorting. **📥 Photos from the trip** (under ＋ New day) takes a big batch at once.
 - **Day photos and place photos.** The Photos card has two parts: **Day photos** (the day's own gallery) and **On places** (grouped by place, shown on each place's card and in the day's *Places today* row). Drag a photo onto a place in *Where did you go?*, onto a group, or onto a numbered place on the map; drag it back up to make it a day photo again. On a phone, tap 📍 on the photo, then tap the place.
 - **📷 Photos & videos.** Photos are resized for the journal. Videos keep up to 30 seconds: a longer video asks which 30 seconds to keep, then shrinks it while it plays (keep the page open until the bar finishes). ⭐ makes a photo the cover.
-- **🙂 How was today?** Mood and weather.
+- **🙂 How was today?** Mood, weather and **👟 steps**. Type the day's step count in the box; the trip total updates beside it. Private days aren't counted.
 - **💭 Today's questions.** Three questions each day (🔀 swaps one), with **＋ Another question** and **✏️ My own question**.
 - **✏️ My story.** Free writing on lined paper.
 - **🎙️ Voice notes.** Up to 3 minutes each.
@@ -74,7 +74,7 @@ Places are numbered **day.place**: 1.1 and 1.2 on day 1, then 2.1, 2.2 on day 2.
 
 ### 📖 Book
 
-A book with turning pages: cover, an **Our journey** page (trip map and stats: days, places, countries, distance by transport, photos, videos, voice notes, words written), a **Day by day** contents page, then each day starting on a left-hand page. Long stories continue onto extra pages, and extra photos get photo pages. Turn pages with the arrows, by swiping, or with the arrow keys. On a phone it shows one page at a time.
+A book with turning pages: cover, an **Our journey** page (trip map and stats: days, places, countries, distance by transport, photos, videos, voice notes, words written and steps taken), a **Day by day** contents page, then each day starting on a left-hand page. Long stories continue onto extra pages, and extra photos get photo pages. Turn pages with the arrows, by swiping, or with the arrow keys. On a phone it shows one page at a time.
 
 Once a page has turned, its map comes alive: drag and zoom it, and tap a numbered place for its card (the trip map on **Our journey** is the globe when the overview is set to globe). Turn pages with the arrows or the page edges while a map is on screen. **⤢ Enlarge** opens a full-screen map, where ‹ › flies from day to day. Pages show a picture of the map while they turn, and the PDF prints the picture.
 

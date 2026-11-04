@@ -440,6 +440,7 @@ window.TOM_CONFIG = {
 .jv-spread .jv-tmapw{flex:1;min-height:0;display:flex;}
 .jv-spread .jv-tmap{flex:1;aspect-ratio:auto;height:100%;}
 .jv-spread .jv-stats{grid-template-columns:repeat(8,1fr);}
+.jv-spread .jv-stats.jv-st9{grid-template-columns:repeat(9,1fr);}
 .jv-spread .jv-foot{display:grid;grid-template-columns:1fr auto 1fr;}
 .jv-spread .jv-foot span:first-child{text-align:left;} .jv-spread .jv-foot span:last-child{text-align:right;}
 .jv-th-notebook .jv-spread .jv-nbholes{left:calc(50% - .35em);right:auto;}
@@ -605,7 +606,10 @@ main{flex:1;min-height:0;position:relative;}
 .emorow button b{font-size:28px;line-height:1.1;}
 .emorow button span{font-size:11px;font-weight:800;color:var(--muted);}
 .emorow button.on{border-color:var(--coral);background:var(--coral-l);}
-.emolab{font-size:13px;font-weight:800;color:var(--muted);margin:4px 0 6px;}
+.strow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+.strow input{width:120px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;font-weight:800;background:#fff;}
+.sttot{font-size:13px;font-weight:800;color:var(--muted);}
+.emolab{display:block;font-size:13px;font-weight:800;color:var(--muted);margin:4px 0 6px;}
 .prompt{background:var(--sun-l);border-radius:12px;padding:10px 12px;margin-bottom:10px;}
 .prompt .pq{display:flex;align-items:center;gap:6px;font-weight:900;font-size:15px;color:#7a5a06;}
 .prompt .pq span{flex:1;}
@@ -930,12 +934,12 @@ function tripLegs(entries){
 }
 function tripStats(D, entries){
   entries=entries||sortEntries(D.entries);
-  var M=D.media||{}, st={days:0,places:0,countries:[],km:0,byMode:{},photos:0,videos:0,voice:0,words:0,first:'',last:''}, seenC={}, dates={};
+  var M=D.media||{}, st={days:0,places:0,countries:[],km:0,byMode:{},photos:0,videos:0,voice:0,words:0,steps:0,first:'',last:''}, seenC={}, dates={};
   entries.forEach(function(e){
     if(e.date){ dates[e.date]=1; if(!st.first||e.date<st.first) st.first=e.date; if(!st.last||e.date>st.last) st.last=e.date; }
     (e.stops||[]).forEach(function(s){ st.places++; if(s.cc && !seenC[s.cc]){ seenC[s.cc]=1; st.countries.push({cc:s.cc,name:s.country||s.cc}); } });
     (e.media||[]).forEach(function(m){ var x=M[m.id]; if(!x) return; if(x.t==='photo') st.photos++; else if(x.t==='video') st.videos++; else if(x.t==='audio') st.voice++; });
-    st.words+=words(e.text); (e.prompts||[]).forEach(function(p){ st.words+=words(p.a); });
+    st.steps+=+e.steps||0; st.words+=words(e.text); (e.prompts||[]).forEach(function(p){ st.words+=words(p.a); });
   });
   st.days=Object.keys(dates).length;
   tripLegs(entries).forEach(function(l){ st.km+=l.km; st.byMode[l.mode]=(st.byMode[l.mode]||0)+l.km; });
@@ -1208,6 +1212,7 @@ function journalViewer(root, D, opts){
   }
   function mwHtml(e){ var b=''; if(e.mood && T.MOODS[e.mood]) b+='<span class="jv-badge"><b>'+T.MOODS[e.mood][0]+'</b>'+E(T.MOODS[e.mood][1])+'</span>';
     if(e.weather && T.WEATHER[e.weather]) b+='<span class="jv-badge"><b>'+T.WEATHER[e.weather][0]+'</b>'+E(T.WEATHER[e.weather][1])+'</span>';
+    if(+e.steps) b+='<span class="jv-badge"><b>👟</b>'+(+e.steps).toLocaleString()+(+e.steps===1?' step':' steps')+'</span>';
     return b?'<div class="jv-mw">'+b+'</div>':''; }
   function paras(t){ return String(t||'').split(/\n+/).map(function(s){ return s.trim(); }).filter(Boolean); }
   function pqHtml(p){ return '<div class="jv-pq"><div class="jv-q">'+E(p.q)+'</div><div class="jv-a">'+E(p.a)+'</div></div>'; }
@@ -1223,10 +1228,15 @@ function journalViewer(root, D, opts){
     if(x.t==='video'){ var qu=pdfMode?dayUrl(e):''; return '<figure class="jv-ph jv-phv '+(cls||'')+'"><div class="jv-phf"><img src="'+E(x.poster||'')+'" alt="" data-lb="'+E(e.id)+'" data-m="'+E(m.id)+'"><span class="jv-playb">▶</span>'+(qu?qrImg(qu):'')+'</div>'+((m.cap||qu)?'<figcaption>'+E(m.cap||'')+(qu?(m.cap?' · ':'')+'scan to watch':'')+'</figcaption>':'')+'</figure>'; }
     return '<figure class="jv-ph '+(cls||'')+'"><div class="jv-phf"><img src="'+E(x.src)+'" alt="'+E(m.cap||'')+'" data-lb="'+E(e.id)+'" data-m="'+E(m.id)+'"></div>'+(m.cap?'<figcaption>'+E(m.cap)+'</figcaption>':'')+'</figure>'; }
   function smapHtml(key, cls){ return '<div class="jv-smap '+(cls||'')+'" data-smap="'+key+'">'+(maps[key]?'<img src="'+maps[key]+'" alt="Map">':'<span class="jv-spin">Drawing the map…</span>')+'</div>'; }
-  function statCells(){
+  function statRows(){
     var cells=[['📅',st.days,st.days===1?'day':'days'],['📍',st.places,st.places===1?'place':'places'],['🌍',st.countries.length,st.countries.length===1?'country':'countries'],
       ['🧭',T.km(st.km),'km travelled'],['📷',st.photos,st.photos===1?'photo':'photos'],['🎬',st.videos,st.videos===1?'video':'videos'],['🎙️',st.voice,st.voice===1?'voice note':'voice notes'],['✏️',st.words.toLocaleString(),'words written']];
-    return '<div class="jv-stats">'+cells.map(function(c){ return '<div class="jv-stat"><span class="jv-si">'+c[0]+'</span><b>'+c[1]+'</b><span>'+c[2]+'</span></div>'; }).join('')+'</div>';
+    if(st.steps) cells.push(['👟',st.steps.toLocaleString(),st.steps===1?'step taken':'steps taken']);
+    return cells;
+  }
+  function statCells(){
+    var cells=statRows();
+    return '<div class="jv-stats'+(st.steps?' jv-st9':'')+'">'+cells.map(function(c){ return '<div class="jv-stat"><span class="jv-si">'+c[0]+'</span><b>'+c[1]+'</b><span>'+c[2]+'</span></div>'; }).join('')+'</div>';
   }
   /* the "Our journey" spread: the big map across both pages, the numbers underneath */
   function spreadHtml(o){ o=o||{};
@@ -1254,10 +1264,9 @@ function journalViewer(root, D, opts){
       '<div class="jv-infoart" aria-hidden="true">🧭</div>'+foot(i)+'</div>';
   }
   function statsHtml(){
-    var cells=[['📅',st.days,st.days===1?'day':'days'],['📍',st.places,st.places===1?'place':'places'],['🌍',st.countries.length,st.countries.length===1?'country':'countries'],
-      ['🧭',T.km(st.km),'km travelled'],['📷',st.photos,st.photos===1?'photo':'photos'],['🎬',st.videos,st.videos===1?'video':'videos'],['🎙️',st.voice,st.voice===1?'voice note':'voice notes'],['✏️',st.words.toLocaleString(),'words written']];
+    var cells=statRows();
     var modes=Object.keys(st.byMode).sort(function(a,b){ return st.byMode[b]-st.byMode[a]; }).map(function(k){ return '<span class="jv-mchip">'+T.MODES[k].e+' '+T.km(st.byMode[k])+' km</span>'; }).join('');
-    return '<div class="jv-stats">'+cells.map(function(c){ return '<div class="jv-stat"><span class="jv-si">'+c[0]+'</span><b>'+c[1]+'</b><span>'+c[2]+'</span></div>'; }).join('')+'</div>'+
+    return '<div class="jv-stats'+(st.steps?' jv-st9':'')+'">'+cells.map(function(c){ return '<div class="jv-stat"><span class="jv-si">'+c[0]+'</span><b>'+c[1]+'</b><span>'+c[2]+'</span></div>'; }).join('')+'</div>'+
       (st.countries.length?'<div class="jv-clist">'+st.countries.map(function(c){ return '<span>'+T.flag(c.cc)+' '+E(c.name)+'</span>'; }).join('')+'</div>':'')+
       (modes?'<div class="jv-tmodes">'+modes+'</div>':'');
   }
@@ -1403,7 +1412,7 @@ function journalViewer(root, D, opts){
       if(inner.length%2===1) inner.push({k:'blank'});      /* every day opens on a left-hand page */
       var vis=dayVisual(e), blocks=[];
       if(vis.length) blocks.push({k:'map',e:e});
-      if(e.mood||e.weather) blocks.push({k:'mw',e:e});
+      if(e.mood||e.weather||+e.steps) blocks.push({k:'mw',e:e});
       if((e.stops||[]).some(T.hasInfo)) blocks.push({k:'places',e:e});
       (e.prompts||[]).forEach(function(p){ if(p && String(p.a||'').trim()) blocks.push({k:'pq',p:p,e:e}); });
       var ps=paras(e.text); if(ps.length){ blocks.push({k:'h',t:'My day'}); ps.forEach(function(t){ blocks.push({k:'p',t:t}); }); }
@@ -2233,7 +2242,10 @@ const THEME_INFO={notebook:['Notebook','#fffaf0','#e0684b',"'Caveat',cursive",'A
 
 function newJournal(title, author){ const t=Date.now(); return {id:uid(), v:1, title:title||'My travel journal', subtitle:'', author:author||'', theme:'notebook', coverColor:'', coverId:'', view:'book', backText:'', basemap:'light', globe:false,
   created:t, updated:t, metaUpdated:t, entries:[], tombs:{}, mediaMeta:{}, sync:null, publish:null}; }
-function newEntry(date){ const t=Date.now(); return {id:uid(), date, title:'', stops:[], media:[], mood:'', weather:'', prompts:pickPrompts(date+uid(4),3), text:'', items:[], hidden:false, created:t, updated:t}; }
+/* the running total matches what readers see, so private days aren't counted */
+function showStepsTotal(e){ const el=$('#edStepsTot'); if(!el) return; const t=J.entries.reduce((a,x)=>a+(x.hidden?0:+x.steps||0),0);
+  el.textContent='Trip total: '+t.toLocaleString()+(t===1?' step':' steps')+(e.hidden?' (private days aren\'t counted)':''); }
+function newEntry(date){ const t=Date.now(); return {id:uid(), date, title:'', stops:[], media:[], mood:'', weather:'', steps:0, prompts:pickPrompts(date+uid(4),3), text:'', items:[], hidden:false, created:t, updated:t}; }
 const sorted=()=>TOM.sortEntries(J.entries);
 const cur=()=>J&&J.entries.find(e=>e.id===curId);
 function dayNumber(e){ const s=sorted(), f=s.length?TOM.parseD(s[0].date):null, d=TOM.parseD(e.date); return f&&d?Math.round((d-f)/864e5)+1:s.indexOf(e)+1; }
@@ -2316,7 +2328,8 @@ function renderWrite(fit){
       '<div class="drop" id="edDrop"><button class="btn" id="mAdd">＋ Add photos or videos</button><div style="margin-top:6px">or drop them here</div></div><input type="file" id="mFile" accept="image/*,video/*" multiple hidden></div>'+
     '<div class="card"><h3><span class="em">🙂</span> How was today?</h3><div class="emolab">I felt…</div><div class="emorow" id="edMood">'+
       Object.keys(TOM.MOODS).map(k=>'<button data-k="'+k+'" class="'+(e.mood===k?'on':'')+'"><b>'+TOM.MOODS[k][0]+'</b><span>'+TOM.MOODS[k][1]+'</span></button>').join('')+'</div>'+
-      '<div class="emolab">The weather was…</div><div class="emorow" id="edWx">'+Object.keys(TOM.WEATHER).map(k=>'<button data-k="'+k+'" class="'+(e.weather===k?'on':'')+'"><b>'+TOM.WEATHER[k][0]+'</b><span>'+TOM.WEATHER[k][1]+'</span></button>').join('')+'</div></div>'+
+      '<div class="emolab">The weather was…</div><div class="emorow" id="edWx">'+Object.keys(TOM.WEATHER).map(k=>'<button data-k="'+k+'" class="'+(e.weather===k?'on':'')+'"><b>'+TOM.WEATHER[k][0]+'</b><span>'+TOM.WEATHER[k][1]+'</span></button>').join('')+'</div>'+
+      '<label class="emolab" for="edSteps">👟 Steps I took today</label><div class="strow"><input id="edSteps" type="text" inputmode="numeric" autocomplete="off" placeholder="0" value="'+(+e.steps?(+e.steps).toLocaleString():'')+'"><span class="sttot" id="edStepsTot"></span></div></div>'+
     '<div class="card"><h3><span class="em">💭</span> Today\'s questions<small>answer any you like</small></h3><div id="edPrompts"></div><div class="btnrow"><button class="btn small alt" id="pAdd">＋ Another question</button><button class="btn small alt" id="pOwn">✏️ My own question</button></div></div>'+
     '<div class="card"><h3><span class="em">✏️</span> My story</h3><textarea class="story" id="edText" placeholder="Today we…">'+esc(e.text)+'</textarea><div class="wc" id="edWc"></div></div>'+
     '<div class="card"><h3><span class="em">🎙️</span> Voice notes<small>up to 3 minutes each</small></h3><div class="voices" id="edVoice"></div><div class="btnrow" id="recRow"><button class="btn coral" id="vRec">🎙️ Record a voice note</button></div></div>'+
@@ -2328,9 +2341,13 @@ function renderWrite(fit){
   $('#edDate').onchange=ev=>{ if(!ev.target.value) return; e.date=ev.target.value; touch(e); renderWrite(); };
   $('#edText').oninput=ev=>{ e.text=ev.target.value; touch(e); wc(); };
   const wc=()=>{ const n=TOM.words(e.text); $('#edWc').textContent=n?n+' '+(n===1?'word':'words'):''; }; wc();
-  $('#edHide').onchange=ev=>{ e.hidden=ev.target.checked; touch(e); renderDays(); };
+  $('#edHide').onchange=ev=>{ e.hidden=ev.target.checked; touch(e); renderDays(); showStepsTotal(e); };
   $('#edDel').onclick=()=>deleteDay(e);
   $$('#edMood button').forEach(b=>b.onclick=()=>{ e.mood=e.mood===b.dataset.k?'':b.dataset.k; touch(e); $$('#edMood button').forEach(x=>x.classList.toggle('on', x.dataset.k===e.mood)); renderDays(); });
+  const stIn=$('#edSteps');
+  stIn.oninput=()=>{ e.steps=+stIn.value.replace(/\D/g,'').slice(0,6)||0; touch(e); showStepsTotal(e); };
+  stIn.onblur=()=>{ stIn.value=e.steps?e.steps.toLocaleString():''; };
+  showStepsTotal(e);
   $$('#edWx button').forEach(b=>b.onclick=()=>{ e.weather=e.weather===b.dataset.k?'':b.dataset.k; touch(e); $$('#edWx button').forEach(x=>x.classList.toggle('on', x.dataset.k===e.weather)); });
   /* places */
   $('#stHere').onclick=async()=>{ const b=$('#stHere'); b.disabled=true; b.textContent='📍 Finding you…';
@@ -2821,7 +2838,7 @@ async function buildD(opt){
   for(const e of ents) for(const m of e.media){ const r=MEDIA[m.id]||await mediaRec(m.id); if(r) media[m.id]=opt.mediaFn?await opt.mediaFn(r):mediaView(r); }
   if(J.coverId && !media[J.coverId]){ const r=MEDIA[J.coverId]||await mediaRec(J.coverId); if(r && ents.some(e=>e.media.some(m=>m.id===J.coverId))) media[J.coverId]=opt.mediaFn?await opt.mediaFn(r):mediaView(r); }
   return {title:J.title, subtitle:J.subtitle, author:J.author, theme:J.theme, coverColor:J.coverColor, coverId:media[J.coverId]?J.coverId:'', view:J.view, backText:J.backText, basemap:J.basemap||'light', globe:!!J.globe, overview:J.overview||'auto',
-    entries:JSON.parse(JSON.stringify(ents.map(e=>({id:e.id,date:e.date,title:e.title,stops:e.stops,media:e.media,mood:e.mood,weather:e.weather,prompts:e.prompts,text:e.text,items:e.items,created:e.created})))),
+    entries:JSON.parse(JSON.stringify(ents.map(e=>({id:e.id,date:e.date,title:e.title,stops:e.stops,media:e.media,mood:e.mood,weather:e.weather,steps:e.steps,prompts:e.prompts,text:e.text,items:e.items,created:e.created})))),
     media, url:opt.url||(J.publish&&J.publish.url)||''};
 }
 async function renderRead(){
