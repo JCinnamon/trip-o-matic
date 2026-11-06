@@ -239,6 +239,16 @@ window.TOM_CONFIG = {
 .jv-scroll .jv-par{font-size:17px;} .jv-th-notebook .jv-scroll .jv-par{font-size:25px;}
 .jv-th-notebook .jv-scroll .jv-a{font-size:24px;}
 .jv-scroll .jv-stats{grid-template-columns:repeat(4,1fr);}
+/* Scroll: a strip of days that stays at the top of the story */
+.jv-sdays{position:sticky;top:0;z-index:4;display:flex;gap:6px;overflow-x:auto;padding:8px 12px;scrollbar-width:none;background:rgba(20,22,28,.42);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+.jv-sdays::-webkit-scrollbar{display:none;}
+.jv-sdays .jv-chip{font-size:13px;padding:6px 12px;box-shadow:none;}
+/* the "new days" note for people opening a shared link again */
+.jv-new{flex:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 12px;font-family:var(--ui);font-size:14px;background:var(--accent);color:#fff;z-index:19;}
+.jv-th-night .jv-new{color:#1b2333;}
+.jv-new span{flex:1;min-width:0;}
+.jv-new button{font:inherit;font-weight:800;border:0;border-radius:999px;padding:5px 12px;background:#fff;color:#22293a;cursor:pointer;}
+.jv-new .jv-newx{background:none;color:inherit;padding:2px 6px;font-size:16px;}
 @media (max-width:760px){
   .jv-scroll{grid-template-columns:minmax(0,1fr);}
   .jv-smapcol{grid-column:1;grid-row:1;height:36vh;z-index:5;box-shadow:0 2px 10px rgba(0,0,0,.25);}
@@ -247,6 +257,7 @@ window.TOM_CONFIG = {
   .jv-hero{min-height:64vh;} .jv-day{min-height:0;}
   .jv-scroll .jv-stats{grid-template-columns:repeat(2,1fr);}
   .jv-mtag{bottom:10px;font-size:13px;}
+  .jv-sdays{top:calc(var(--jvh,100vh) * var(--mh,0.36));}
 }
 
 /* ================= MAP ================= */
@@ -1741,6 +1752,8 @@ function journalViewer(root, D, opts){
       '<section class="jv-sec jv-hero" data-i="-2"'+(coverCol?' style="--cov:'+coverCol+'"':'')+'>'+(cimg?'<div class="jv-heroimg" style="background-image:url(\''+E(cimg).replace(/'/g,'%27')+'\')"></div>':'')+
         '<div class="jv-herotxt"><div class="jv-kick">Travel journal</div><h1 class="jv-cvt">'+E(title)+'</h1>'+(D.subtitle?'<div class="jv-cvs">'+E(D.subtitle)+'</div>':'')+(flags?'<div class="jv-cvf">'+flags+'</div>':'')+
         (st.first?'<div class="jv-cvd">'+E(dateRange())+'</div>':'')+(D.author?'<div class="jv-cva">by '+E(D.author)+'</div>':'')+'<div class="jv-scrollhint">Scroll to start the journey ↓</div></div></section>'+
+      (entries.length?'<nav class="jv-sdays" aria-label="Days"><button class="jv-chip" data-go="-1">🌍 Trip</button>'+
+        entries.map(function(e,i){ return '<button class="jv-chip" data-go="'+i+'" style="--dc:'+dcol(e)+'" title="'+E(e.title||T.fmtShort(e.date))+'">Day '+dayNo(e)+'</button>'; }).join('')+'</nav>':'')+
       '<section class="jv-sec jv-intro" data-i="-1"><div class="jv-card"><h2 class="jv-h">Our journey</h2>'+statsHtml()+'</div></section>'+
       entries.map(function(e,i){ return daySection(e,i); }).join('')+
       '<section class="jv-sec jv-send" data-i="-3"><div class="jv-card"><div class="jv-bkend">The end</div>'+(D.backText?'<p>'+E(D.backText)+'</p>':'')+'<div class="jv-brand">Made with Trip-O-Matic</div></div></section>'+
@@ -1771,16 +1784,23 @@ function journalViewer(root, D, opts){
     function show(i, force){
       if(i===active && !force) return; var was=active; active=i;
       if(grown){ lv.closePop(); }
+      if(days){ days.querySelectorAll('.jv-chip').forEach(function(c){ c.classList.toggle('on', +c.getAttribute('data-go')===i); });
+        var on=days.querySelector('.jv-chip.on'); if(on) days.scrollTo({left:on.offsetLeft-days.clientWidth/2+on.clientWidth/2, behavior:'smooth'}); }
       if(i>=0){ ovbox.hidden=true; var e=entries[i]; lv.day(i);
         tag.innerHTML='<b style="color:'+dcol(e)+'">Day '+dayNo(e)+'</b> '+E(e.title||T.fmtShort(e.date)); tag.style.display='';
       } else { tag.style.display='none'; ovbox.hidden=!canGlobe; if(was!=null && was>=0) lv.overview(); }
     }
     ovListeners.push(function(){ lv.setGlobe(ovGlobe); });
-    var secs=[].slice.call(body.querySelectorAll('.jv-sec'));
+    var secs=[].slice.call(body.querySelectorAll('.jv-sec')), days=body.querySelector('.jv-sdays');
+    /* scroll so a section starts just under the day strip (and, on a phone, the map above it) */
+    function goSec(sec){ if(!sec) return; var top=sec.getBoundingClientRect().top-sc.getBoundingClientRect().top+sc.scrollTop;
+      sc.scrollTo({top:Math.max(0, top-(days?days.offsetHeight:0)-(narrow()?col.offsetHeight:0)), behavior:'smooth'}); }
+    if(days) days.addEventListener('click', function(ev){ var b=ev.target.closest('[data-go]'); if(!b) return; var i=+b.getAttribute('data-go');
+      goSec(i<0?body.querySelector('.jv-intro'):body.querySelector('#day-'+CSS.escape(entries[i].id))); });
     function onScroll(){ var line=sc.clientHeight*0.45, best=secs[0]; secs.forEach(function(s){ if(s.getBoundingClientRect().top-sc.getBoundingClientRect().top<=line) best=s; }); show(+best.getAttribute('data-i')); }
     sc.addEventListener('scroll', onScroll, {passive:true}); killers.push(function(){ sc.removeEventListener('scroll', onScroll); });
     setTimeout(function(){ lv.resize(); onScroll(); }, 60);
-    return {goDay:function(id){ var s=body.querySelector('#day-'+CSS.escape(id)); if(s) s.scrollIntoView(); }};
+    return {goDay:function(id){ goSec(body.querySelector('#day-'+CSS.escape(id))); }};
   }
 
   /* ================= MAP ================= */
@@ -1857,6 +1877,13 @@ function journalViewer(root, D, opts){
     '<button data-mode="book" role="tab">📖 <span>Book</span></button><button data-mode="scroll" role="tab">📜 <span>Scroll</span></button><button data-mode="map" role="tab">🗺️ <span>Map</span></button></div>'+
     '<div class="jv-dls">'+(dl.pdf!==false?'<button class="jv-dl" data-dl="pdf" title="Download as PDF">⬇ PDF</button>':'')+(dl.html?'<button class="jv-dl" data-dl="html" title="Download as a web page">⬇ Web page</button>':'')+'</div></div><div class="jv-body"></div>';
   var bodyEl=root.querySelector('.jv-body'), api={};
+  /* someone opening a shared link again: say which days are new since they last looked */
+  var fresh=entries.filter(function(e){ return (opts.newIds||[]).indexOf(e.id)>=0; });
+  if(fresh.length){ var nb=doc.createElement('div'); nb.className='jv-new'; nb.setAttribute('role','status');
+    nb.innerHTML='<span>✨ <b>'+fresh.length+' new '+(fresh.length===1?'day':'days')+'</b> since you last looked</span><button class="jv-newgo">See Day '+dayNo(fresh[0])+' →</button><button class="jv-newx" aria-label="Close">✕</button>';
+    root.insertBefore(nb, bodyEl);
+    nb.querySelector('.jv-newgo').onclick=function(){ if(api.goDay) api.goDay(fresh[0].id); nb.remove(); };
+    nb.querySelector('.jv-newx').onclick=function(){ nb.remove(); }; }
   function render(m){
     killers.forEach(function(k){ try{ k(); }catch(_){ } }); killers=[]; ovListeners=[]; placeOnMap=null;
     mode=m; root.querySelectorAll('.jv-modes button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-mode')===m); b.setAttribute('aria-selected', b.getAttribute('data-mode')===m); });
@@ -2143,7 +2170,17 @@ async function processPhoto(file){
 /* ---------------- video: short clips, made smaller in the browser ---------------- */
 const CLIP_MAX=30;
 function videoInfo(file){ return new Promise((res,rej)=>{ const v=document.createElement('video'); v.preload='metadata'; v.muted=true; v.playsInline=true; const u=URL.createObjectURL(file);
-  v.onloadedmetadata=()=>res({v, u, dur:v.duration, w:v.videoWidth, h:v.videoHeight}); v.onerror=()=>{ URL.revokeObjectURL(u); rej(new Error('This video type cannot be played in this browser.')); }; v.src=u; }); }
+  v.onloadedmetadata=async()=>{ v.onerror=null; res({v, u, dur:await realDuration(v), w:v.videoWidth, h:v.videoHeight}); };
+  v.onerror=()=>{ URL.revokeObjectURL(u); rej(new Error('This video type cannot be played in this browser.')); }; v.src=u; }); }
+/* some files (often ones recorded in a browser) don't store their length: jump far past the end so the browser
+   works it out, then come back. Returns 0 if it still can't tell. */
+function realDuration(v){
+  if(isFinite(v.duration) && v.duration>0) return Promise.resolve(v.duration);
+  return new Promise(r=>{ const done=()=>{ clearTimeout(tm); v.removeEventListener('durationchange', chk); v.removeEventListener('timeupdate', chk);
+      const d=isFinite(v.duration)&&v.duration>0?v.duration:0; v.currentTime=0; r(d); },
+    chk=()=>{ if(isFinite(v.duration) && v.duration>0) done(); }, tm=setTimeout(done, 4000);
+    v.addEventListener('durationchange', chk); v.addEventListener('timeupdate', chk); v.currentTime=1e7; });
+}
 function seek(v,t){ return new Promise(r=>{ const done=()=>{ v.removeEventListener('seeked',done); r(); }; v.addEventListener('seeked',done); v.currentTime=t; setTimeout(done, 3000); }); }
 async function posterOf(v, t){ await seek(v, Math.min(t, Math.max(0,(v.duration||1)-0.1))); const cv=document.createElement("canvas");
   const k=Math.min(1, 960/Math.max(v.videoWidth,v.videoHeight)); cv.width=Math.round(v.videoWidth*k); cv.height=Math.round(v.videoHeight*k); cv.getContext('2d').drawImage(v,0,0,cv.width,cv.height); return canvasBlob(cv,'image/jpeg',0.8); }
@@ -2153,52 +2190,92 @@ function pickClipStart(info, file){
     buttons:[{label:'Cancel', cls:'alt', value:null},{label:'Use this clip', get:bg=>+bg.querySelector('#vtR').value}],
     onOpen:bg=>{ const r=bg.querySelector('#vtR'), v=bg.querySelector('#vtPrev'), l=bg.querySelector('#vtL'); r.oninput=()=>{ v.currentTime=+r.value; l.textContent='Clip: '+fmtTime(+r.value)+' – '+fmtTime(+r.value+CLIP_MAX); }; }});
 }
-function recorderType(kind){
-  const list=kind==='audio'?['audio/mp4','audio/webm;codecs=opus','audio/webm','audio/ogg']:['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
-  if(!window.MediaRecorder) return null; for(const t of list){ try{ if(MediaRecorder.isTypeSupported(t)) return t; }catch(_){ } } return '';
+const REC_TYPES={audio:['audio/mp4','audio/webm;codecs=opus','audio/webm','audio/ogg'],
+  video:['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm']};
+function recorderTypes(kind){
+  if(!window.MediaRecorder) return null;
+  const ok=REC_TYPES[kind].filter(t=>{ try{ return MediaRecorder.isTypeSupported(t); }catch(_){ return false; } });
+  return ok.length?ok:[''];
 }
+function recorderType(kind){ const t=recorderTypes(kind); return t?t[0]:null; }
 async function processVideo(file, onProg){
-  const info=await videoInfo(file), v=info.v;
+  const info=await videoInfo(file), v=info.v, known=info.dur>0;
   let start=0;
   if(info.dur>CLIP_MAX+1){ start=await pickClipStart(info, file); if(start==null){ URL.revokeObjectURL(info.u); return null; } }
-  const len=Math.min(CLIP_MAX, info.dur-start);
+  const len=known?Math.min(CLIP_MAX, info.dur-start):CLIP_MAX;
   const poster=await posterOf(v, start+Math.min(1, len/2));
-  const small=Math.max(info.w,info.h)<=1280 && file.size<12e6 && info.dur<=CLIP_MAX+1 && /mp4|quicktime|webm/.test(file.type);
-  const type=recorderType('video');
-  const canRec=type!=null && HTMLCanvasElement.prototype.captureStream;
+  const keep=()=>({t:'video', mime:file.type||'video/mp4', blob:file, poster, w:info.w, h:info.h, dur:known?Math.min(info.dur, CLIP_MAX):0, name:file.name});
+  const small=known && Math.max(info.w,info.h)<=1280 && file.size<12e6 && info.dur<=CLIP_MAX+1 && /mp4|quicktime|webm/.test(file.type);
+  const types=recorderTypes('video'), canRec=types!=null && HTMLCanvasElement.prototype.captureStream;
   if(small || !canRec){
-    if(!small && file.size>40e6){ URL.revokeObjectURL(info.u); throw new Error('This video is too big, and this browser cannot shrink it. Try a shorter clip.'); }
     URL.revokeObjectURL(info.u);
-    return {t:'video', mime:file.type||'video/mp4', blob:file, poster, w:info.w, h:info.h, dur:Math.min(info.dur, CLIP_MAX), name:file.name};
+    if(!small && file.size>40e6) throw new Error('This video is too big, and this browser cannot shrink it. Try a shorter clip.');
+    return keep();
   }
   /* play the clip into a smaller canvas and record it again */
   const k=Math.min(1, 854/Math.max(info.w, info.h)), W=Math.round(info.w*k/2)*2, H=Math.round(info.h*k/2)*2;
   const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const ctx=cv.getContext('2d');
   const stream=cv.captureStream(30);
-  let actx=null;
-  try{ actx=new (window.AudioContext||window.webkitAudioContext)(); const src=actx.createMediaElementSource(v), dst=actx.createMediaStreamDestination(); src.connect(dst); dst.stream.getAudioTracks().forEach(t=>stream.addTrack(t)); v.muted=false; }catch(_){ v.muted=true; }
-  const rec=new MediaRecorder(stream, Object.assign({videoBitsPerSecond:1200000, audioBitsPerSecond:64000}, type?{mimeType:type}:{}));
-  const chunks=[]; rec.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
-  await seek(v, start);
-  const done=new Promise(r=>rec.onstop=r);
-  let stop=false;
-  /* the video plays (silently, off-screen) while each frame is copied to the canvas */
-  v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none;'; document.body.appendChild(v);
-  let ticker=null;
-  const draw=()=>{ if(stop) return; try{ ctx.drawImage(v,0,0,W,H); }catch(_){ } const t=v.currentTime-start; if(onProg) onProg(Math.min(1,t/len));
-    if(t>=len || v.ended){ stop=true; clearInterval(ticker); v.pause(); setTimeout(()=>rec.stop(), 120); } };
-  rec.start(1000);
-  if(actx && actx.state==='suspended') try{ await actx.resume(); }catch(_){ }
-  try{ await v.play(); }catch(e){ v.muted=true; await v.play(); }
-  ticker=setInterval(draw, 33); draw();
-  const guard=setInterval(()=>{ if(!stop && v.paused && !v.ended){ v.play().catch(()=>{}); } }, 1500);
-  await done; clearInterval(guard); clearInterval(ticker); v.remove();
-  if(actx) actx.close().catch(()=>{});
-  URL.revokeObjectURL(info.u);
-  const mime=(rec.mimeType||type||'video/webm').split(';')[0];
-  const blob=new Blob(chunks,{type:mime});
-  return {t:'video', mime, blob, poster, w:W, h:H, dur:len, name:file.name};
+  let actx=null, dst=null;
+  try{ actx=new (window.AudioContext||window.webkitAudioContext)(); dst=actx.createMediaStreamDestination(); dst.stream.getAudioTracks().forEach(t=>stream.addTrack(t)); }catch(_){ actx=null; }
+  v.pause();
+  let out=null;
+  try{
+    /* try each format the browser offers until one gives a clip that plays */
+    for(const type of types){
+      out=await recordOnce(type);
+      if(out && await playable(out.blob)) break;
+      out=null; if(onProg) onProg(0);
+    }
+  } finally {
+    if(actx) actx.close().catch(()=>{}); stream.getTracks().forEach(t=>t.stop()); URL.revokeObjectURL(info.u);
+  }
+  if(out) return {t:'video', mime:out.mime, blob:out.blob, poster, w:W, h:H, dur:out.dur, name:file.name};
+  /* no format worked: keep the original if it isn't too big, rather than saving a broken clip */
+  if(file.size<=40e6 && info.dur<=CLIP_MAX+1){ toast('🎬 This browser couldn\'t shrink '+esc(file.name)+', so the original was kept', 7000); return keep(); }
+  throw new Error('This browser couldn\'t shrink this video. Try it in another browser, or use a shorter clip.');
+
+  /* record the clip once in one format; null if the recorder failed, stalled or stopped early */
+  async function recordOnce(type){
+    /* a fresh player each time: after a recorder fails, the old one can get stuck seeking */
+    const pv=document.createElement('video'); pv.playsInline=true; pv.preload='auto'; pv.muted=true;
+    /* it plays (silently, off-screen) while each frame is copied to the canvas */
+    pv.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none;'; document.body.appendChild(pv);
+    let src=null, ticker=null, guard=null;
+    try{
+      await new Promise((r,j)=>{ pv.onloadedmetadata=r; pv.onerror=j; setTimeout(j, 8000); pv.src=info.u; });
+      if(actx){ try{ src=actx.createMediaElementSource(pv); src.connect(dst); pv.muted=false; }catch(_){ src=null; } }
+      let rec; try{ rec=new MediaRecorder(stream, Object.assign({videoBitsPerSecond:1200000, audioBitsPerSecond:64000}, type?{mimeType:type}:{})); }catch(_){ return null; }
+      const chunks=[]; let failed=false, stop=false;
+      rec.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
+      rec.onerror=()=>{ failed=true; };
+      await seek(pv, start);
+      const done=new Promise(r=>rec.onstop=r);
+      const finish=()=>{ stop=true; clearInterval(ticker); clearInterval(guard); pv.pause(); };
+      const halt=()=>{ failed=true; finish(); if(rec.state!=='inactive') rec.stop(); };
+      const draw=()=>{ if(stop) return; try{ ctx.drawImage(pv,0,0,W,H); }catch(_){ } const t=pv.currentTime-start; if(onProg) onProg(Math.min(1,t/len));
+        if(t>=len || pv.ended){ finish(); setTimeout(()=>{ if(rec.state!=='inactive') rec.stop(); }, 120); } };
+      try{ rec.start(1000); }catch(_){ return null; }
+      if(actx && actx.state==='suspended') try{ await actx.resume(); }catch(_){ }
+      try{ await pv.play(); }catch(e){ pv.muted=true; try{ await pv.play(); }catch(_){ halt(); await done; return null; } }
+      ticker=setInterval(draw, 33); draw();
+      /* keep it playing, and give up on this format if the video stops moving (while the page is on screen) */
+      let lastT=-1, lastAt=Date.now();
+      guard=setInterval(()=>{ if(stop) return; if(pv.paused && !pv.ended) pv.play().catch(()=>{});
+        if(document.hidden || pv.currentTime!==lastT){ lastT=pv.currentTime; lastAt=Date.now(); } else if(Date.now()-lastAt>6000) halt(); }, 1500);
+      await done;
+      const early=!stop; finish();
+      if(failed || early || !chunks.length) return null;
+      const mime=(rec.mimeType||type||'video/webm').split(';')[0];
+      return {blob:new Blob(chunks,{type:mime}), mime, dur:Math.min(len, Math.max(0, pv.currentTime-start))||len};
+    }catch(_){ return null; }
+    finally{ clearInterval(ticker); clearInterval(guard); pv.pause(); if(src) try{ src.disconnect(); }catch(_){ } pv.remove(); }
+  }
 }
+/* true if the browser can open this clip and it has a picture */
+function playable(blob){ return new Promise(r=>{ const v=document.createElement('video'), u=URL.createObjectURL(blob); v.muted=true; v.preload='metadata';
+  const end=ok=>{ clearTimeout(tm); URL.revokeObjectURL(u); r(ok); }, tm=setTimeout(()=>end(false), 5000);
+  v.onloadedmetadata=()=>end(v.videoWidth>0); v.onerror=()=>end(false); v.src=u; }); }
 
 /* ---------------- voice notes ---------------- */
 const VOICE_MAX=180;
@@ -3482,7 +3559,12 @@ async function showPublished(id){
     D.url=appUrl()+'?j='+id;
     document.title=D.title||'Travel journal';
     if(d.access==='public'){ const m=document.querySelector('meta[name=robots]'); if(m) m.remove(); }
-    journalViewer(root, D, {downloads:{pdf:true}});
+    /* days this browser hasn't seen before (nothing the first time someone opens the link) */
+    const ids=(D.entries||[]).map(e=>e.id); let seen=null;
+    try{ seen=JSON.parse(localStorage.getItem('tom.seen.'+id)||'null'); }catch(_){ }
+    const newIds=Array.isArray(seen)?ids.filter(x=>!seen.includes(x)):[];
+    try{ localStorage.setItem('tom.seen.'+id, JSON.stringify(ids)); }catch(_){ }
+    journalViewer(root, D, {downloads:{pdf:true}, newIds});
   };
   root.innerHTML='<div class="gate"><div class="card"><div style="font-size:48px">📖</div><b>Opening the journal…</b></div></div>';
   try{ await load(); }catch(e){ root.innerHTML='<div class="gate"><div class="card"><h2>Could not open the journal</h2><p class="hint">'+esc(e.message||e)+'</p></div></div>'; }

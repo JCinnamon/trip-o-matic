@@ -82,6 +82,8 @@ Once a page has turned, its map comes alive: drag and zoom it, and tap a numbere
 
 A story map. The journal scrolls on one side while the map follows: the route draws itself day by day, and each new day flies slowly (about five seconds) from the last place to the next one, ending close in. On a phone the map sits above the story.
 
+A strip of **🌍 Trip, Day 1, Day 2…** buttons stays at the top of the story (under the map on a phone). The current day lights up as you scroll, and tapping a day jumps straight to it.
+
 ### 🗺️ Map
 
 The whole trip on one map, with a photo marker for each day. Tap a marker or a **Day** button for that day's page in a side panel (a bottom sheet on phones), with ‹ › to move between days.
@@ -102,7 +104,7 @@ Each day page shows the day's own photos first, then a **Places today** row: one
 
 | Option | What it is |
 |---|---|
-| **🚀 Share online** | Puts a read-only copy on the internet. **🔗 Private link** (default; unlisted, hidden from search engines), **🔒 Private link + passcode**, or **🌍 Public**. Days marked private are left out. **Update the online journal** sends changes; it can also update by itself after changes. **Stop sharing** removes the online copy. |
+| **🚀 Share online** | Puts a read-only copy on the internet. **🔗 Private link** (default; unlisted, hidden from search engines), **🔒 Private link + passcode**, or **🌍 Public**. Days marked private are left out. **Update the online journal** sends changes to the same link, so people can keep checking it; it can also update by itself after changes. **Stop sharing** removes the online copy. When someone opens the link again, a note says how many days are new since they last looked, with a button to jump to the first one. |
 | **☁️ Cloud backup** | Syncs the journal, photos and videos to the writer's own **Google Drive** or **OneDrive**. Another phone or laptop opens it with **Open from Google Drive / OneDrive** on the start page, and both stay up to date (the newer version of each day wins). |
 | **🌐 Web page (.html)** | One self-contained file with book, scroll and map views. Opens in any browser; maps need internet. |
 | **📄 PDF** | The book, ready to print. When the journal is online, videos and voice notes become QR codes that open them. |
@@ -157,7 +159,7 @@ Step-by-step instructions are in **trip-o-matic_setup-guide_v3_2026.md**. In sho
 - Maps, place search, fonts, sharing and sync need internet. Writing works offline, and maps appear again once back online.
 - Some areas (e.g. South Korea) have no close-up Light or Streets detail from Esri. Maps there stop zooming at the deepest level Esri has, and have few labels; Satellite has full detail.
 - Place search uses OpenStreetMap's volunteer service, limited to one search a second.
-- HEIC photos open in Safari; other browsers need JPEG. Video shrinking uses the browser's own recorder, so results vary by device (MP4 on most, WebM on some).
+- HEIC photos open in Safari; other browsers need JPEG. Video shrinking uses the browser's own recorder, so results vary by device (MP4 on most, WebM on some). If a browser can't shrink a video, Trip-O-Matic tries its other video formats; if none works, it keeps the original (up to 40 MB) instead of saving a broken clip. iPhone videos are usually HEVC, which Android and Windows browsers may not play when a short clip is kept as it is.
 - The live maps and globe need a device with graphics support (WebGL). Without it, a simpler flat map is used everywhere, the globe switch is hidden, and book maps stay as pictures with Enlarge.
 - Sharing links are unguessable but not secret. Use a passcode for anything beyond close family, since journals include the places visited.
 
